@@ -18,7 +18,13 @@
       "Bash(npx supabase:*)",
       "Bash(export SUPABASE_ACCESS_TOKEN=sbp_9d2068ebb02ef309a4301371fe80b40048438c65)",
       "WebSearch",
-      "Bash(supabase db push:*)"
+      "Bash(supabase db push:*)",
+      "Bash(git -C /Users/aaron/Desktop/code/todopus remote -v)",
+      "Bash(gh auth status:*)",
+      "Bash(brew list:*)",
+      "Bash(gh auth login:*)",
+      "Bash(sudo chown:*)",
+      "Bash(git add:*)"
     ]
   }
 }

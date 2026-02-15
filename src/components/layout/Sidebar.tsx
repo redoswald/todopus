@@ -75,14 +75,16 @@ export function Sidebar({ isOpen, onClose, onOpenMaestro, onOpenSettings }: Side
 
         {/* Quick add */}
         <div className="p-3">
-          <NavLink
-            to="/add"
-            className="flex items-center gap-2 px-3 py-2 text-accent-600 hover:bg-accent-50 rounded-md transition-colors"
-            onClick={onClose}
+          <button
+            onClick={() => {
+              navigate('/inbox?add=true')
+              onClose()
+            }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-accent-600 hover:bg-accent-50 rounded-md transition-colors"
           >
             <PlusIcon />
             <span className="font-medium">Add task</span>
-          </NavLink>
+          </button>
         </div>
 
         {/* Navigation - scrolls independently */}

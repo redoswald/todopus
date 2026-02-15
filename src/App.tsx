@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { LoginPage } from '@/components/auth/LoginPage'
 import { SignupPage } from '@/components/auth/SignupPage'
+import { LandingPage } from '@/components/LandingPage'
 import { AppShell } from '@/components/layout/AppShell'
 import { InboxView } from '@/components/views/InboxView'
 import { TodayView } from '@/components/views/TodayView'
@@ -15,6 +16,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
+        <Route index element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
@@ -26,7 +28,6 @@ export default function App() {
             </AuthGuard>
           }
         >
-          <Route index element={<Navigate to="/inbox" replace />} />
           <Route path="/inbox" element={<InboxView />} />
           <Route path="/today" element={<TodayView />} />
           <Route path="/upcoming" element={<UpcomingView />} />

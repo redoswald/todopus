@@ -23,13 +23,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Clean up OAuth hash fragment from URL
-    if (window.location.hash.includes('access_token')) {
-      window.history.replaceState(null, '', window.location.pathname)
-    }
-
-    // Get initial session
+    // Get initial session (this also parses OAuth hash fragments like #access_token=...)
     supabase.auth.getSession().then(({ data: { session } }) => {
+      // Clean up OAuth hash fragment from URL after Supabase has parsed it
+      if (window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname)
+      }
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false) // Set loading false immediately

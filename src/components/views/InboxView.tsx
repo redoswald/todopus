@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { TaskList } from '@/components/tasks/TaskList'
 import { TaskEditor } from '@/components/tasks/TaskEditor'
@@ -9,6 +10,14 @@ export function InboxView() {
   const { data: tasks = [], isLoading } = useTasks({ inbox: true })
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [showAddTask, setShowAddTask] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('add') === 'true') {
+      setShowAddTask(true)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   return (
     <MainPanel title="Inbox">
