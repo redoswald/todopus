@@ -1,10 +1,8 @@
-# Opus — A Personal Task & Project Operating System
+# Todopus — Product Specification
 
 ## Vision
 
 A Todoist-like task manager with first-class support for AI-assisted planning. Built for personal use but designed for multiple users and project sharing from day one. The core insight: tasks need *context* (not just titles) so an AI can meaningfully review, prioritize, and schedule them.
-
-**Name rationale:** "Opus" — a great work, composed of many smaller movements. Also: it's what you're building it with.
 
 ### Design Principles
 
@@ -40,7 +38,7 @@ With Supabase, you don't need a separate Express backend for most operations. Th
 ### Project Structure
 
 ```
-opus/
+todopus/
 ├── src/
 │   ├── components/
 │   │   ├── layout/
