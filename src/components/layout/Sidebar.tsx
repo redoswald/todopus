@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback } from 'react'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProjects, buildProjectTree } from '@/hooks/useProjects'
+import { useProjects, useDeleteProject, buildProjectTree } from '@/hooks/useProjects'
 import { useInboxCount, useTodayCount, useUpdateTask } from '@/hooks/useTasks'
+import { ProjectContextMenu } from '@/components/shared/ProjectContextMenu'
+import { ConfirmDeleteModal } from '@/components/shared/ConfirmDeleteModal'
 import type { Project } from '@/types'
 
 interface SidebarProps {
@@ -19,9 +21,40 @@ export function Sidebar({ isOpen, onClose, onOpenMaestro, onOpenSettings }: Side
   const { data: inboxCount = 0 } = useInboxCount()
   const { data: todayCount = 0 } = useTodayCount()
   const navigate = useNavigate()
+  const location = useLocation()
   const updateTask = useUpdateTask()
+  const deleteProject = useDeleteProject()
 
   const projectTree = buildProjectTree(projects)
+
+  // Context menu + delete modal state
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  function handleProjectContextMenu(project: Project, position: { x: number; y: number }) {
+    setContextMenu(position)
+    setDeleteTarget(project)
+  }
+
+  function handleContextMenuDelete() {
+    setContextMenu(null)
+    setShowDeleteModal(true)
+  }
+
+  function handleConfirmDelete() {
+    if (!deleteTarget) return
+    const deletedId = deleteTarget.id
+    deleteProject.mutate(deletedId, {
+      onSuccess: () => {
+        setShowDeleteModal(false)
+        setDeleteTarget(null)
+        if (location.pathname === `/project/${deletedId}`) {
+          navigate('/inbox')
+        }
+      },
+    })
+  }
 
   async function handleSignOut() {
     await signOut()
@@ -112,7 +145,7 @@ export function Sidebar({ isOpen, onClose, onOpenMaestro, onOpenSettings }: Side
             </div>
             <div className="space-y-0.5">
               {projectTree.map((project) => (
-                <ProjectItem key={project.id} project={project} depth={0} onClick={onClose} onTaskDrop={handleMoveToProject} />
+                <ProjectItem key={project.id} project={project} depth={0} onClick={onClose} onTaskDrop={handleMoveToProject} onContextMenu={handleProjectContextMenu} />
               ))}
             </div>
           </div>
@@ -143,6 +176,29 @@ export function Sidebar({ isOpen, onClose, onOpenMaestro, onOpenSettings }: Side
           </button>
         </div>
       </aside>
+
+      {/* Context menu */}
+      {contextMenu && deleteTarget && (
+        <ProjectContextMenu
+          position={contextMenu}
+          onClose={() => setContextMenu(null)}
+          onDelete={handleContextMenuDelete}
+        />
+      )}
+
+      {/* Delete confirmation modal */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setDeleteTarget(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete project"
+        itemName={deleteTarget?.name ?? ''}
+        description="All sections and child projects will be deleted. Tasks will be moved to Inbox."
+        isPending={deleteProject.isPending}
+      />
     </>
   )
 }
@@ -213,12 +269,49 @@ interface ProjectItemProps {
   depth: number
   onClick?: () => void
   onTaskDrop?: (taskId: string, projectId: string) => void
+  onContextMenu?: (project: Project, position: { x: number; y: number }) => void
 }
 
-function ProjectItem({ project, depth, onClick, onTaskDrop }: ProjectItemProps) {
+function ProjectItem({ project, depth, onClick, onTaskDrop, onContextMenu }: ProjectItemProps) {
   const [expanded, setExpanded] = useState(true)
   const [isDragOver, setIsDragOver] = useState(false)
   const hasChildren = project.children && project.children.length > 0
+
+  // Long-press support
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+
+  function handleRightClick(e: React.MouseEvent) {
+    e.preventDefault()
+    onContextMenu?.(project, { x: e.clientX, y: e.clientY })
+  }
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    touchStart.current = { x: touch.clientX, y: touch.clientY }
+    longPressTimer.current = setTimeout(() => {
+      onContextMenu?.(project, { x: touch.clientX, y: touch.clientY })
+      longPressTimer.current = null
+    }, 500)
+  }, [project, onContextMenu])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!longPressTimer.current || !touchStart.current) return
+    const touch = e.touches[0]
+    const dx = touch.clientX - touchStart.current.x
+    const dy = touch.clientY - touchStart.current.y
+    if (Math.sqrt(dx * dx + dy * dy) > 10) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }, [])
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }, [])
 
   function handleDragOver(e: React.DragEvent) {
     if (e.dataTransfer.types.includes('application/opus-task')) {
@@ -259,6 +352,10 @@ function ProjectItem({ project, depth, onClick, onTaskDrop }: ProjectItemProps) 
         <NavLink
           to={`/project/${project.id}`}
           onClick={onClick}
+          onContextMenu={handleRightClick}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -283,7 +380,7 @@ function ProjectItem({ project, depth, onClick, onTaskDrop }: ProjectItemProps) 
       {hasChildren && expanded && (
         <div>
           {project.children!.map((child) => (
-            <ProjectItem key={child.id} project={child} depth={depth + 1} onClick={onClick} onTaskDrop={onTaskDrop} />
+            <ProjectItem key={child.id} project={child} depth={depth + 1} onClick={onClick} onTaskDrop={onTaskDrop} onContextMenu={onContextMenu} />
           ))}
         </div>
       )}

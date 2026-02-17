@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { TaskList } from '@/components/tasks/TaskList'
 import { TaskEditor } from '@/components/tasks/TaskEditor'
+import { ConfirmDeleteModal } from '@/components/shared/ConfirmDeleteModal'
 import { ProjectHeader } from './ProjectHeader'
-import { useProject } from '@/hooks/useProjects'
+import { useProject, useDeleteProject } from '@/hooks/useProjects'
 import { useTasks } from '@/hooks/useTasks'
 import { useSections, useDeleteSection, Section } from '@/hooks/useSections'
 import type { Task } from '@/types'
@@ -15,8 +16,11 @@ export function ProjectView() {
   const { data: sections = [], isLoading: sectionsLoading } = useSections(projectId)
   const { data: unsectionedTasks = [], isLoading: tasksLoading } = useTasks({ projectId, noSection: true })
 
+  const navigate = useNavigate()
+  const deleteProject = useDeleteProject()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [addingTaskToSection, setAddingTaskToSection] = useState<string | null>(null) // section id or 'none'
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const isLoading = projectLoading || sectionsLoading || tasksLoading
 
@@ -109,6 +113,37 @@ export function ProjectView() {
             />
           </div>
         )}
+
+        {/* Danger zone */}
+        <div className="mt-12 mb-8 border border-red-200 rounded-lg bg-red-50/50 p-4">
+          <h3 className="text-sm font-semibold text-red-900">Danger zone</h3>
+          <p className="mt-1 text-sm text-red-700/70">
+            Permanently delete this project, its sections, and all child projects. Tasks will be moved to Inbox.
+          </p>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="mt-3 px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-md hover:bg-red-100 transition-colors"
+          >
+            Delete project
+          </button>
+        </div>
+
+        <ConfirmDeleteModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={() => {
+            deleteProject.mutate(projectId!, {
+              onSuccess: () => {
+                setShowDeleteModal(false)
+                navigate('/inbox')
+              },
+            })
+          }}
+          title="Delete project"
+          itemName={project.name}
+          description="All sections and child projects will be deleted. Tasks will be moved to Inbox."
+          isPending={deleteProject.isPending}
+        />
       </div>
     </MainPanel>
   )
