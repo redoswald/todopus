@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { TaskList } from '@/components/tasks/TaskList'
@@ -21,6 +21,19 @@ export function ProjectView() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [addingTaskToSection, setAddingTaskToSection] = useState<string | null>(null) // section id or 'none'
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [dangerVisible, setDangerVisible] = useState(false)
+  const dangerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = dangerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setDangerVisible(true) },
+      { threshold: 0.5 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [project])
 
   const isLoading = projectLoading || sectionsLoading || tasksLoading
 
@@ -114,8 +127,14 @@ export function ProjectView() {
           </div>
         )}
 
-        {/* Danger zone */}
-        <div className="mt-12 mb-8 border border-red-200 rounded-lg bg-red-50/50 p-4">
+        {/* Spacer — pushes danger zone well below the fold */}
+        <div className="h-[60vh]" />
+
+        {/* Danger zone — fades in on scroll */}
+        <div
+          ref={dangerRef}
+          className={`mb-8 border border-red-200 rounded-lg bg-red-50/50 p-4 transition-opacity duration-500 ${dangerVisible ? 'opacity-100' : 'opacity-0'}`}
+        >
           <h3 className="text-sm font-semibold text-red-900">Danger zone</h3>
           <p className="mt-1 text-sm text-red-700/70">
             Permanently delete this project, its sections, and all child projects. Tasks will be moved to Inbox.
