@@ -1,21 +1,28 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MaestroDrawer } from '../maestro/MaestroDrawer'
 import { SettingsModal } from '../maestro/SettingsModal'
 import { CommandPalette, useCommandPalette } from './CommandPalette'
+import { useSidebarResize } from '@/hooks/useSidebarResize'
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [maestroOpen, setMaestroOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const commandPalette = useCommandPalette()
+  const sidebar = useSidebarResize()
 
   return (
     <div className="h-screen flex bg-white overflow-hidden">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        width={sidebar.width}
+        isCollapsed={sidebar.isCollapsed}
+        isDragging={sidebar.isDragging}
+        dragHandleProps={sidebar.dragHandleProps}
         onOpenMaestro={() => {
           setSidebarOpen(false)
           setMaestroOpen(true)
@@ -28,13 +35,19 @@ export function AppShell() {
 
       {/* Main content area - scrolls independently */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile header */}
-        <div className="lg:hidden flex items-center gap-4 p-4 border-b border-gray-200 flex-shrink-0">
+        {/* Mobile header + desktop collapsed expand button */}
+        <div className={`md:hidden flex items-center gap-4 p-4 border-b border-gray-200 flex-shrink-0 ${sidebar.isCollapsed ? '!flex' : ''}`}>
           <button
-            onClick={() => setSidebarOpen(true)}
+            onClick={() => {
+              if (sidebar.isCollapsed) {
+                sidebar.expand()
+              } else {
+                setSidebarOpen(true)
+              }
+            }}
             className="p-2 -m-2 text-gray-600 hover:text-gray-900"
           >
-            <MenuIcon />
+            <Menu className="w-6 h-6" />
           </button>
           <span className="font-semibold text-gray-900">Opus</span>
         </div>
@@ -66,13 +79,5 @@ export function AppShell() {
         onClose={commandPalette.close}
       />
     </div>
-  )
-}
-
-function MenuIcon() {
-  return (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
   )
 }
