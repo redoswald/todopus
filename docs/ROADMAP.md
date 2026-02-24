@@ -28,6 +28,13 @@
 - [x] Sidebar three-zone layout with drag-to-resize and localStorage persistence
 - [x] App switcher (Zone 1) and account menu dropdown (Zone 3)
 - [x] Lucide icon migration (sidebar, AppShell, CommandPalette)
+- [x] Toast notifications with undo for task and project actions
+- [x] ⌘K enhanced — task search, project search, actions (Maestro, settings, new project)
+- [x] Google avatar in sidebar + display name editing
+- [x] Project drag-to-reorder with visual drop indicators
+- [x] Project color picker via context menu
+- [x] Project archive/unarchive + Archive view
+- [x] Route-based settings page (`/settings`) — Profile, Maestro AI, Security, Apps, Data
 
 ---
 
@@ -35,9 +42,9 @@
 
 ### Tier 1 — Daily-Use Friction
 
-- [ ] **Toast/undo system** — Global toast provider. Show feedback on task create, complete, delete. Undo button on destructive actions (5-second window). Foundation for many other features
+- [x] ~~**Toast/undo system**~~ — Done. Global toast provider with undo on destructive actions
 - [ ] **Quick-add from any view** — Inline "+ Add task" on Today, project pages, and sections. Pre-fill context (current project, today's date on Today view). Stop navigating to Inbox to create tasks
-- [ ] **Real settings page** — Replace API key modal with a proper `/settings` route. Sections: Account (name, email, password), AI/Integrations (API key), and eventually Appearance
+- [x] ~~**Real settings page**~~ — Done. Route-based `/settings` with Profile, Maestro AI, Security, Apps, Data cards
 
 ### Tier 2 — Polish & Trust
 
@@ -67,16 +74,16 @@
 
 ### Tier 5 — Project Features
 
-- [ ] Archive/unarchive projects — "Finished" ≠ "erased"
+- [x] ~~Archive/unarchive projects~~ — Done. Context menu + Archive view + undo toast
 - [ ] Project progress indicator — "12 of 30 tasks complete" or progress bar
-- [ ] Drag-and-drop reordering (projects, sections, tasks within a view)
+- [x] ~~Drag-and-drop reordering (projects)~~ — Done. Sidebar project reorder with drop indicators. Sections/tasks still TODO
 - [ ] Project sharing (already in DB schema, needs UI)
 - [ ] Project templates for recurring workflows
 
 ### Tier 6 — Cross-App & Infrastructure
 
-- [ ] Unified account settings shared with All Friends
-- [ ] App switcher dropdown (currently single-app, wire up when All Friends is ready)
+- [x] ~~Unified account settings shared with All Friends~~ — Done. /settings page with shared Supabase profile
+- [x] ~~App switcher dropdown~~ — Done. Wired up in sidebar Zone 1 + Apps card on settings
 - [ ] Supabase Edge Functions for secure AI proxy (key never in browser)
 - [ ] Real-time sync (Supabase subscriptions)
 - [ ] Data export (JSON/CSV)

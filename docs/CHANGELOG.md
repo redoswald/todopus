@@ -5,9 +5,19 @@ All notable changes to Todopus will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- README, consolidated SPEC, and this changelog
+- Route-based settings page (`/settings`) with Profile, Maestro AI, Security, Apps, and Data cards
+- Project drag-to-reorder in sidebar with visual drop indicators
+- Project color picker via right-click context menu
+- Project archive/unarchive with dedicated Archive view
+- ⌘K command palette with task search, project search, view navigation, and actions
+- Toast notifications with undo support for task and project actions
+- App switcher in sidebar (Zone 1)
+- Account menu dropdown with Google avatar
+- Editable display name in settings
+- Sidebar drag-to-resize with localStorage persistence
 
 ### Changed
+- Replaced settings modal with full settings page
 - Renamed package from "opus" to "todopus"
 
 ### Infrastructure
