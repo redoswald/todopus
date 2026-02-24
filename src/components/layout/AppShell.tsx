@@ -77,6 +77,14 @@ export function AppShell() {
       <CommandPalette
         isOpen={commandPalette.isOpen}
         onClose={commandPalette.close}
+        onOpenMaestro={() => {
+          commandPalette.close()
+          setMaestroOpen(true)
+        }}
+        onOpenSettings={() => {
+          commandPalette.close()
+          setSettingsOpen(true)
+        }}
       />
     </div>
   )

@@ -7,23 +7,35 @@ import {
   CalendarDays,
   CircleCheck,
   Plus,
+  Sparkles,
+  Settings,
+  FolderPlus,
+  CheckSquare,
 } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { useProjects } from '@/hooks/useProjects'
+import { useSearchTasks } from '@/hooks/useTasks'
 import type { Project } from '@/types'
 
 interface CommandPaletteProps {
   isOpen: boolean
   onClose: () => void
+  onOpenMaestro: () => void
+  onOpenSettings: () => void
 }
 
 interface SearchItem {
   id: string
-  type: 'view' | 'project'
+  type: 'view' | 'action' | 'project' | 'task'
   name: string
-  path: string
+  path?: string
+  action?: () => void
   color?: string
   icon?: React.ReactNode
+  dueDate?: string | null
+  projectName?: string
+  projectColor?: string
 }
 
 const BUILT_IN_VIEWS: SearchItem[] = [
@@ -31,15 +43,39 @@ const BUILT_IN_VIEWS: SearchItem[] = [
   { id: 'today', type: 'view', name: 'Today', path: '/today', icon: <CalendarCheck className="w-5 h-5" /> },
   { id: 'upcoming', type: 'view', name: 'Upcoming', path: '/upcoming', icon: <CalendarDays className="w-5 h-5" /> },
   { id: 'completed', type: 'view', name: 'Completed', path: '/completed', icon: <CircleCheck className="w-5 h-5" /> },
-  { id: 'add', type: 'view', name: 'Add Task', path: '/add', icon: <Plus className="w-5 h-5" /> },
+  { id: 'add', type: 'view', name: 'Add Task', path: '/inbox?add=true', icon: <Plus className="w-5 h-5" /> },
 ]
 
-export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+const SECTION_ORDER: SearchItem['type'][] = ['view', 'action', 'project', 'task']
+
+const SECTION_LABELS: Record<string, string> = {
+  view: 'Views',
+  action: 'Actions',
+  project: 'Projects',
+  task: 'Tasks',
+}
+
+export function CommandPalette({ isOpen, onClose, onOpenMaestro, onOpenSettings }: CommandPaletteProps) {
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
   const { data: projects = [] } = useProjects()
+  const { data: searchedTasks = [] } = useSearchTasks(debouncedQuery)
+
+  // Debounce query for task search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  // Action commands
+  const actionItems: SearchItem[] = useMemo(() => [
+    { id: 'maestro', type: 'action', name: 'Open Maestro', icon: <Sparkles className="w-5 h-5" />, action: onOpenMaestro },
+    { id: 'new-project', type: 'action', name: 'New Project', icon: <FolderPlus className="w-5 h-5" />, path: '/projects/new' },
+    { id: 'settings', type: 'action', name: 'Settings', icon: <Settings className="w-5 h-5" />, action: onOpenSettings },
+  ], [onOpenMaestro, onOpenSettings])
 
   // Flatten projects into search items
   const projectItems: SearchItem[] = useMemo(() => {
@@ -60,29 +96,54 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     return items
   }, [projects])
 
-  // Filter items based on query
+  // Map searched tasks to search items
+  const taskItems: SearchItem[] = useMemo(() => {
+    return searchedTasks.map(task => ({
+      id: task.id,
+      type: 'task' as const,
+      name: task.title,
+      path: task.project_id ? `/project/${task.project_id}` : '/inbox',
+      dueDate: task.due_date,
+      projectName: task.project?.name,
+      projectColor: task.project?.color,
+      icon: <CheckSquare className="w-5 h-5" />,
+    }))
+  }, [searchedTasks])
+
+  // Filter and combine items
   const filteredItems = useMemo(() => {
-    const allItems = [...BUILT_IN_VIEWS, ...projectItems]
-    if (!query.trim()) {
-      return allItems
-    }
-    const lowerQuery = query.toLowerCase()
-    return allItems.filter(item =>
-      item.name.toLowerCase().includes(lowerQuery)
-    )
-  }, [query, projectItems])
+    const lowerQuery = query.trim().toLowerCase()
+    const hasQuery = lowerQuery.length > 0
+
+    const views = hasQuery
+      ? BUILT_IN_VIEWS.filter(v => v.name.toLowerCase().includes(lowerQuery))
+      : BUILT_IN_VIEWS
+
+    const actions = hasQuery
+      ? actionItems.filter(a => a.name.toLowerCase().includes(lowerQuery))
+      : actionItems
+
+    const filteredProjects = hasQuery
+      ? projectItems.filter(p => p.name.toLowerCase().includes(lowerQuery))
+      : projectItems
+
+    // Only show tasks when there's a query (otherwise too noisy)
+    const tasks = hasQuery ? taskItems : []
+
+    return [...views, ...actions, ...filteredProjects, ...tasks]
+  }, [query, actionItems, projectItems, taskItems])
 
   // Reset selection when query changes
   useEffect(() => {
     setSelectedIndex(0)
   }, [query])
 
-  // Focus input when opening
+  // Focus input when opening, reset debounced query when closing
   useEffect(() => {
     if (isOpen) {
       setQuery('')
+      setDebouncedQuery('')
       setSelectedIndex(0)
-      // Small delay to ensure modal is rendered
       setTimeout(() => inputRef.current?.focus(), 10)
     }
   }, [isOpen])
@@ -112,8 +173,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   }
 
   function handleSelect(item: SearchItem) {
-    navigate(item.path)
-    onClose()
+    if (item.action) {
+      item.action()
+    } else if (item.path) {
+      navigate(item.path)
+      onClose()
+    }
   }
 
   if (!isOpen) return null
@@ -140,7 +205,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search projects and views..."
+              placeholder="Search tasks, projects, and views..."
               className="flex-1 outline-none text-gray-900 placeholder-gray-400"
             />
             <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-xs text-gray-400 bg-gray-100 rounded">
@@ -156,15 +221,15 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
               </div>
             ) : (
               <div className="py-2">
-                {/* Views section */}
-                {filteredItems.some(item => item.type === 'view') && (
-                  <>
-                    <div className="px-4 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Views
-                    </div>
-                    {filteredItems
-                      .filter(item => item.type === 'view')
-                      .map((item) => {
+                {SECTION_ORDER.map(sectionType => {
+                  const sectionItems = filteredItems.filter(item => item.type === sectionType)
+                  if (sectionItems.length === 0) return null
+                  return (
+                    <div key={sectionType}>
+                      <div className="px-4 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2 first:mt-0">
+                        {SECTION_LABELS[sectionType]}
+                      </div>
+                      {sectionItems.map(item => {
                         const globalIdx = filteredItems.indexOf(item)
                         return (
                           <ResultItem
@@ -176,31 +241,9 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                           />
                         )
                       })}
-                  </>
-                )}
-
-                {/* Projects section */}
-                {filteredItems.some(item => item.type === 'project') && (
-                  <>
-                    <div className="px-4 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">
-                      Projects
                     </div>
-                    {filteredItems
-                      .filter(item => item.type === 'project')
-                      .map((item) => {
-                        const globalIdx = filteredItems.indexOf(item)
-                        return (
-                          <ResultItem
-                            key={item.id}
-                            item={item}
-                            isSelected={selectedIndex === globalIdx}
-                            onSelect={() => handleSelect(item)}
-                            onHover={() => setSelectedIndex(globalIdx)}
-                          />
-                        )
-                      })}
-                  </>
-                )}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -231,6 +274,8 @@ interface ResultItemProps {
 }
 
 function ResultItem({ item, isSelected, onSelect, onHover }: ResultItemProps) {
+  const selectionHint = item.action ? 'Run →' : 'Go →'
+
   return (
     <button
       onClick={onSelect}
@@ -240,17 +285,35 @@ function ResultItem({ item, isSelected, onSelect, onHover }: ResultItemProps) {
         isSelected ? 'bg-accent-50 text-accent-700' : 'text-gray-700 hover:bg-gray-50'
       )}
     >
-      {item.type === 'view' ? (
-        <span className="w-5 h-5 text-gray-500">{item.icon}</span>
-      ) : (
+      {item.type === 'project' ? (
         <span
-          className="w-3 h-3 rounded-full"
+          className="w-3 h-3 rounded-full flex-shrink-0"
           style={{ backgroundColor: item.color }}
         />
+      ) : (
+        <span className="w-5 h-5 text-gray-500 flex-shrink-0">{item.icon}</span>
       )}
       <span className="flex-1 truncate">{item.name}</span>
+      {item.type === 'task' && (
+        <span className="flex items-center gap-2 flex-shrink-0">
+          {item.projectName && (
+            <span className="flex items-center gap-1 text-xs text-gray-400">
+              <span
+                className="w-2 h-2 rounded-full inline-block"
+                style={{ backgroundColor: item.projectColor }}
+              />
+              {item.projectName}
+            </span>
+          )}
+          {item.dueDate && (
+            <span className="text-xs text-gray-400">
+              {format(parseISO(item.dueDate), 'MMM d')}
+            </span>
+          )}
+        </span>
+      )}
       {isSelected && (
-        <span className="text-xs text-accent-500">Go →</span>
+        <span className="text-xs text-accent-500 flex-shrink-0">{selectionHint}</span>
       )}
     </button>
   )

@@ -10,7 +10,7 @@ interface UseSidebarResizeOptions {
 export function useSidebarResize({
   storageKey = 'opus-sidebar-width',
   defaultWidth = 240,
-  minWidth = 180,
+  minWidth = 288,
   maxWidth = 360,
 }: UseSidebarResizeOptions = {}) {
   const [width, setWidth] = useState(() => {

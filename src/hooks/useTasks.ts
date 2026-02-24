@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { Task, CreateTaskInput, UpdateTaskInput } from '@/types'
 
@@ -240,6 +240,25 @@ export function useInboxCount() {
       if (error) throw error
       return count ?? 0
     },
+  })
+}
+
+export function useSearchTasks(query: string) {
+  return useQuery({
+    queryKey: ['tasks', 'search', query],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('id, title, due_date, project_id, project:projects(id, name, color)')
+        .eq('status', 'open')
+        .ilike('title', `%${query}%`)
+        .limit(8)
+
+      if (error) throw error
+      return data as unknown as Pick<Task, 'id' | 'title' | 'due_date' | 'project_id' | 'project'>[]
+    },
+    enabled: query.length >= 2,
+    placeholderData: keepPreviousData,
   })
 }
 
