@@ -19,11 +19,11 @@
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| Profile/account page | ❌ | High | Shared with All Friends — name, email, avatar |
+| Profile/account page | ✅ | High | Profile card on /settings — avatar, display name (editable), email (read-only) |
 | Change password | ❌ | High | Basic auth hygiene |
 | Delete account | ❌ | Medium | Data ownership |
-| Settings page (real) | ❌ | High | Current "settings" is just an API key modal. Needs to become a real page with sections |
-| API key management | ✅ | — | Exists, works. Should move into a proper settings page under an "Integrations" or "AI" section |
+| Settings page (real) | ✅ | High | Route-based /settings page with 5 card sections: Profile, Maestro AI, Security, Apps, Data |
+| API key management | ✅ | — | Moved into Maestro AI card on /settings with show/hide toggle and masked display |
 | Notification preferences | ❌ | Low | Less urgent than All Friends since Opus doesn't have cadence reminders |
 | Theme/appearance | ❌ | Low | Deferred to v2 with dark mode |
 | Data export | ❌ | Medium | Export tasks/projects as JSON or CSV |
@@ -39,7 +39,7 @@
 | Delete confirmation for projects | ❓ Unknown | High | Deleting a project with 20 tasks should be scary — requires modal + typing project name |
 | Undo after task delete | ❌ | High | Toast with "Undo" (5-second window). Critical for accidental clicks |
 | Undo after task complete | ❌ | Medium | Checking off the wrong task should be reversible. Brief delay or undo toast |
-| Archive vs. delete for projects | ❌ | Medium | "I finished this project" ≠ "erase it." Completed projects should be archivable and browsable |
+| Archive vs. delete for projects | ✅ | Medium | Archive via right-click context menu, browsable in /archived view, undo toast support |
 | Soft delete in database | ❓ Unknown | High | `deleted_at` column so nothing is truly gone |
 | Section delete safety | ❓ Unknown | Medium | Deleting a section — do its tasks get orphaned, moved, or deleted? |
 
@@ -103,7 +103,7 @@
 | Sections within projects | ✅ | — | "Add section" visible on project page |
 | Sub-projects | ✅ | — | Hierarchy visible in sidebar (Making → Coding, 3D Printing, etc.) |
 | Project color/emoji | ✅ | — | Emoji on "Making" (🎨), dot colors on projects |
-| Project archive | ❌ | Medium | Complete a project without deleting it |
+| Project archive | ✅ | Medium | Archive/unarchive via context menu with undo toast, dedicated Archive view in sidebar |
 | Project progress indicator | ❌ | Medium | "12 of 30 tasks complete" or a progress bar |
 | Project due date / target date | ❓ Unknown | Low | Spec included this — is it implemented? |
 | Move tasks between projects | ❓ Unknown | Medium | Drag or reassign from task edit |
@@ -119,7 +119,7 @@
 | Today view | ✅ | — | With "Overdue" section, date badges |
 | Upcoming view | ✅ | — | Exists in nav |
 | Completed view | ✅ | — | Exists in nav |
-| ⌘K / search | ❌ | High | All Friends has ⌘K. Opus has a Search item in sidebar (from earlier screenshot) but latest screenshots don't show it — was it removed? |
+| ⌘K / search | ✅ | High | Command palette with task search, project search, view navigation, and actions |
 | Filter tasks within a view | ❌ | Medium | By priority, by project, by date range |
 | Sort tasks | ❓ Unknown | Medium | By due date, by priority, by creation date |
 | Keyboard navigation | ❓ Unknown | Medium | j/k through task lists, Enter to edit, Escape to close |
@@ -149,7 +149,7 @@
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| ⌘K command palette | ❌ | High | The single most impactful power-user feature. Search tasks, projects, switch views, trigger Maestro |
+| ⌘K command palette | ✅ | High | Implemented — searches tasks, projects, views; triggers Maestro and settings navigation |
 | Keyboard task navigation | ❓ Unknown | Medium | Arrow keys or j/k through task lists |
 | Quick-add shortcut | ❓ Unknown | Medium | `q` or `n` to open task creation from anywhere |
 | Complete task shortcut | ❓ Unknown | Medium | `c` or `x` on focused task |
@@ -184,7 +184,7 @@
 | Hover actions | ✅ Partial | — | Trash icon on hover visible. Are there others (edit, reschedule, move)? |
 | Bulk task operations | ❌ | Medium | Multi-select + bulk complete, delete, reschedule, move to project |
 | Task count badges | ✅ | — | "Today 12", "Inbox 1" in sidebar. Good |
-| Drag to reorder | ❓ Unknown | Medium | Within a project or section |
+| Drag to reorder | ✅ | Medium | Project drag-to-reorder in sidebar with visual drop indicators |
 | Drag to reschedule | ❌ | Low | Drag task to a different date (requires calendar view in Opus) |
 
 ---
@@ -206,7 +206,7 @@
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
 | Landing page | ✅ | — | Exists, looks good |
-| App switcher to All Friends | ❌ | High | Shared nav element per design system |
+| App switcher to All Friends | ✅ | High | AppSwitcher in sidebar Zone 1 + Apps card on /settings with links to Opus and All Friends |
 | "Is this free?" | ❌ | Medium | Pricing clarity, even if it's free |
 | Privacy policy | ❌ | Medium | Especially since it stores an API key |
 | "Built by Aaron" / about | ❌ | Low | Personal touch |
@@ -218,9 +218,9 @@
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| Unified account settings | ❌ | High | Shared with All Friends |
-| App switcher in sidebar | ❌ | High | Zone 1 dropdown |
-| Shared avatar/display name | ❌ | Medium | Set once, appears everywhere |
+| Unified account settings | ✅ | High | /settings page with profile, shared Supabase auth |
+| App switcher in sidebar | ✅ | High | Zone 1 AppSwitcher dropdown |
+| Shared avatar/display name | ✅ | Medium | Google avatar + editable display name on /settings, shown in sidebar |
 | Consistent auth handling | ❓ Unknown | Medium | Session expiry, redirect behavior |
 | All Friends → Opus integration | ❌ | Low-Medium | "Contact is due" → creates a task in Opus (future) |
 
@@ -228,11 +228,11 @@
 
 ## Summary: Top 10 Priorities
 
-1. **⌘K command palette** — Opus is a power-user tool. This is the #1 missing feature for daily use. Search tasks, projects, switch views, open Maestro
+1. ~~**⌘K command palette**~~ ✅ — Implemented with task/project search, view navigation, actions
 2. **Toast/undo system** — Every create, complete, and delete needs feedback. Destructive actions need undo
 3. **Delete confirmations** — Especially for projects with tasks. Task delete needs undo toast at minimum
-4. **Real settings page** — The API key modal needs to become a proper settings section. Account management, AI config, and eventually appearance all live here
-5. **App switcher** — Shared nav element (same priority as All Friends)
+4. ~~**Real settings page**~~ ✅ — Route-based /settings with Profile, Maestro AI, Security, Apps, Data cards
+5. ~~**App switcher**~~ ✅ — AppSwitcher in sidebar Zone 1 + Apps card on settings page
 6. **Empty states** — New user experience for Inbox, Today, projects
 7. **Save indicators for descriptions** — Project wiki and task descriptions need auto-save feedback. Losing edits silently would be brutal
 8. **Loading skeletons** — Task lists, project trees, Today view
