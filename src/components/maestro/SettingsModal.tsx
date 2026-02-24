@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings'
 
 interface SettingsModalProps {
@@ -7,10 +9,13 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  const { profile, refreshProfile } = useAuth()
   const { data: settings } = useSettings()
   const updateSettings = useUpdateSettings()
+  const [displayName, setDisplayName] = useState('')
   const [apiKey, setApiKey] = useState('')
   const [showKey, setShowKey] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
 
   useEffect(() => {
     if (settings?.anthropic_api_key) {
@@ -18,13 +23,35 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   }, [settings])
 
+  useEffect(() => {
+    if (profile?.display_name) {
+      setDisplayName(profile.display_name)
+    }
+  }, [profile])
+
   if (!isOpen) return null
 
-  function handleSave() {
-    updateSettings.mutate(
-      { anthropic_api_key: apiKey || null },
-      { onSuccess: onClose }
-    )
+  async function handleSave() {
+    setSavingProfile(true)
+    try {
+      const trimmedName = displayName.trim()
+      if (trimmedName && trimmedName !== profile?.display_name) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ display_name: trimmedName })
+          .eq('id', profile!.id)
+        if (error) throw error
+        await refreshProfile()
+      }
+      updateSettings.mutate(
+        { anthropic_api_key: apiKey || null },
+        { onSuccess: onClose }
+      )
+    } catch (err) {
+      console.error('Failed to update profile:', err)
+    } finally {
+      setSavingProfile(false)
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -54,6 +81,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
         <div className="p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Display Name
+            </label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder="Your name"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Anthropic API Key
@@ -108,10 +148,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </button>
           <button
             onClick={handleSave}
-            disabled={updateSettings.isPending}
+            disabled={savingProfile || updateSettings.isPending}
             className="px-4 py-2 bg-accent-600 text-white rounded-md hover:bg-accent-700 transition-colors disabled:opacity-50"
           >
-            {updateSettings.isPending ? 'Saving...' : 'Save'}
+            {savingProfile || updateSettings.isPending ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>

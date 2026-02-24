@@ -194,6 +194,7 @@ export function Sidebar({
           <AccountMenu
             displayName={profile?.display_name}
             email={user?.email}
+            avatarUrl={profile?.avatar_url ?? user?.user_metadata?.avatar_url}
             onOpenSettings={onOpenSettings}
             onSignOut={handleSignOut}
           />

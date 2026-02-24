@@ -10,11 +10,12 @@ import {
 interface AccountMenuProps {
   displayName: string | undefined
   email: string | undefined
+  avatarUrl: string | null | undefined
   onOpenSettings: () => void
   onSignOut: () => void
 }
 
-export function AccountMenu({ displayName, email, onOpenSettings, onSignOut }: AccountMenuProps) {
+export function AccountMenu({ displayName, email, avatarUrl, onOpenSettings, onSignOut }: AccountMenuProps) {
   const initial = displayName?.charAt(0).toUpperCase() ?? '?'
   const name = displayName ?? 'Loading...'
 
@@ -24,9 +25,13 @@ export function AccountMenu({ displayName, email, onOpenSettings, onSignOut }: A
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex-1 flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-100 transition-colors min-w-0">
-              <div className="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center text-white font-medium flex-shrink-0">
-                {initial}
-              </div>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full flex-shrink-0" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center text-white font-medium flex-shrink-0">
+                  {initial}
+                </div>
+              )}
               <span className="text-sm text-gray-700 truncate">{name}</span>
             </button>
           </DropdownMenuTrigger>
