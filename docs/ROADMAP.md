@@ -43,7 +43,7 @@
 ### Tier 1 — Daily-Use Friction
 
 - [x] ~~**Toast/undo system**~~ — Done. Global toast provider with undo on destructive actions
-- [ ] **Quick-add from any view** — Inline "+ Add task" on Today, project pages, and sections. Pre-fill context (current project, today's date on Today view). Stop navigating to Inbox to create tasks
+- [x] ~~**Quick-add from any view**~~ — Done. "+ Add task" on Today, Upcoming, and project pages. Context-aware: pre-fills current project and today's date. Sidebar "Add task" button is project-aware
 - [x] ~~**Real settings page**~~ — Done. Route-based `/settings` with Profile, Maestro AI, Security, Apps, Data cards
 
 ### Tier 2 — Polish & Trust
@@ -68,7 +68,7 @@
 - [ ] Due time display (data imported, needs UI)
 - [ ] `blocked_by` dependencies — visual indicator, prevent completing blocked tasks
 - [ ] Subtasks rendering (data imported, needs UI)
-- [ ] Recurring tasks completion logic (creates next instance)
+- [x] ~~Recurring tasks completion logic (creates next instance)~~ — Done. RecurrenceBuilder UI, auto-spawns next occurrence on completion, recurrence indicator on tasks
 - [ ] Due date quick-set buttons — "Today," "Tomorrow," "Next week" instead of raw date picker
 - [ ] Natural language date parsing ("tomorrow", "next monday")
 
