@@ -273,7 +273,12 @@ export function Sidebar({
             <div className="p-3">
               <button
                 onClick={() => {
-                  navigate('/inbox?add=true')
+                  const projectMatch = location.pathname.match(/^\/project\/([^/]+)/)
+                  if (projectMatch) {
+                    navigate(`/project/${projectMatch[1]}?add=true`)
+                  } else {
+                    navigate('/inbox?add=true')
+                  }
                   onClose()
                 }}
                 className="flex items-center gap-2 w-full px-3 py-2 text-accent-600 hover:bg-accent-50 rounded-md transition-colors"

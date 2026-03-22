@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { TaskList } from '@/components/tasks/TaskList'
@@ -19,6 +19,7 @@ export function ProjectView() {
   const { data: unsectionedTasks = [], isLoading: tasksLoading } = useTasks({ projectId, noSection: true })
 
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { data: allProjects = [] } = useProjects()
   const updateProject = useUpdateProject()
   const deleteProject = useDeleteProject()
@@ -29,6 +30,13 @@ export function ProjectView() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [dangerVisible, setDangerVisible] = useState(false)
   const dangerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (searchParams.get('add') === 'true') {
+      setAddingTaskToSection('none')
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   useEffect(() => {
     setDangerVisible(false)
