@@ -143,13 +143,13 @@ export function TaskItem({ task, showProject = false, onClick, draggable = true,
     <div>
       <div
         onClick={onClick}
-        draggable={draggable && depth === 0}
+        draggable={draggable}
         onDragStart={onDragStartProp || handleDragStart}
         style={{ paddingLeft: depth > 0 ? `${depth * 24}px` : undefined }}
         className={cn(
           'group flex items-start gap-3 px-3 py-2 rounded-md transition-colors',
           onClick && 'cursor-pointer hover:bg-gray-50',
-          draggable && depth === 0 && 'cursor-grab active:cursor-grabbing',
+          draggable && 'cursor-grab active:cursor-grabbing',
           depth > 0 && 'border-l-2 border-gray-200 ml-3'
         )}
       >
@@ -324,7 +324,7 @@ export function TaskItem({ task, showProject = false, onClick, draggable = true,
               task={subtask}
               showProject={showProject}
               onClick={onClick ? () => onClick() : undefined}
-              draggable={false}
+              draggable
               depth={depth + 1}
             />
           ))}
