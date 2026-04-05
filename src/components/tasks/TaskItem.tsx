@@ -5,6 +5,7 @@ import { format, isToday, isPast, parseISO } from 'date-fns'
 import Markdown from 'react-markdown'
 import { toast } from 'sonner'
 import { useCompleteTask, useUncompleteTask, useDeleteTask, useCreateTask } from '@/hooks/useTasks'
+import { TaskEditor } from './TaskEditor'
 import { describeRecurrence } from '@/lib/recurrenceHelper'
 import type { Task, CreateTaskInput } from '@/types'
 
@@ -12,6 +13,9 @@ interface TaskItemProps {
   task: Task
   showProject?: boolean
   onClick?: () => void
+  onTaskClick?: (task: Task) => void
+  editingTask?: Task | null
+  onEditClose?: () => void
   draggable?: boolean
   onDragStart?: (e: React.DragEvent) => void
   depth?: number
@@ -44,7 +48,7 @@ function setExpandedState(taskId: string, expanded: boolean) {
   }
 }
 
-export function TaskItem({ task, showProject = false, onClick, draggable = true, onDragStart: onDragStartProp, depth = 0, defaultExpanded = false }: TaskItemProps) {
+export function TaskItem({ task, showProject = false, onClick, onTaskClick, editingTask, onEditClose, draggable = true, onDragStart: onDragStartProp, depth = 0, defaultExpanded = false }: TaskItemProps) {
   const navigate = useNavigate()
   const completeTask = useCompleteTask()
   const uncompleteTask = useUncompleteTask()
@@ -318,16 +322,28 @@ export function TaskItem({ task, showProject = false, onClick, draggable = true,
       {/* Subtasks */}
       {hasSubtasks && isExpanded && openSubtasks.length > 0 && (
         <div className="mt-1">
-          {openSubtasks.map(subtask => (
-            <TaskItem
-              key={subtask.id}
-              task={subtask}
-              showProject={showProject}
-              onClick={onClick ? () => onClick() : undefined}
-              draggable
-              depth={depth + 1}
-            />
-          ))}
+          {openSubtasks.map(subtask =>
+            editingTask?.id === subtask.id ? (
+              <div key={subtask.id} className="py-2" style={{ paddingLeft: `${(depth + 1) * 24}px` }}>
+                <TaskEditor
+                  task={editingTask}
+                  onClose={onEditClose!}
+                />
+              </div>
+            ) : (
+              <TaskItem
+                key={subtask.id}
+                task={subtask}
+                showProject={showProject}
+                onClick={onTaskClick ? () => onTaskClick(subtask) : undefined}
+                onTaskClick={onTaskClick}
+                editingTask={editingTask}
+                onEditClose={onEditClose}
+                draggable
+                depth={depth + 1}
+              />
+            )
+          )}
         </div>
       )}
     </div>

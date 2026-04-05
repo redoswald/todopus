@@ -120,6 +120,9 @@ export function TaskList({ tasks, showProject = false, onTaskClick, emptyMessage
             task={task}
             showProject={showProject}
             onClick={onTaskClick ? () => onTaskClick(task) : undefined}
+            onTaskClick={onTaskClick}
+            editingTask={editingTask}
+            onEditClose={onEditClose}
             dragIndicator={dragIndicator}
             onDragIndicator={setDragIndicator}
             draggedIdRef={draggedIdRef}
@@ -134,12 +137,15 @@ interface DraggableTaskRowProps {
   task: Task
   showProject: boolean
   onClick?: () => void
+  onTaskClick?: (task: Task) => void
+  editingTask?: Task | null
+  onEditClose?: () => void
   dragIndicator: DragIndicator | null
   onDragIndicator: (indicator: DragIndicator | null) => void
   draggedIdRef: React.MutableRefObject<string | null>
 }
 
-function DraggableTaskRow({ task, showProject, onClick, dragIndicator, onDragIndicator, draggedIdRef }: DraggableTaskRowProps) {
+function DraggableTaskRow({ task, showProject, onClick, onTaskClick, editingTask, onEditClose, dragIndicator, onDragIndicator, draggedIdRef }: DraggableTaskRowProps) {
   const rowRef = useRef<HTMLDivElement>(null)
   const isSelf = draggedIdRef.current === task.id
   const indicator = dragIndicator?.targetId === task.id ? dragIndicator : null
@@ -194,6 +200,9 @@ function DraggableTaskRow({ task, showProject, onClick, dragIndicator, onDragInd
           task={task}
           showProject={showProject}
           onClick={onClick}
+          onTaskClick={onTaskClick}
+          editingTask={editingTask}
+          onEditClose={onEditClose}
           draggable
           onDragStart={handleDragStart}
         />
