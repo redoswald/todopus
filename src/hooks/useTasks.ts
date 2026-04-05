@@ -3,13 +3,37 @@ import { supabase } from '@/lib/supabase'
 import { getNextOccurrence } from '@/lib/recurrenceHelper'
 import type { Task, CreateTaskInput, UpdateTaskInput } from '@/types'
 
-// Supabase self-referential joins may return an array instead of a single object
-function normalizeBlockingTask(rows: Record<string, unknown>[]): Task[] {
-  return rows.map(row => {
-    const bt = row.blocking_task
-    if (Array.isArray(bt)) row.blocking_task = bt[0] ?? null
-    return row as unknown as Task
-  })
+// Resolve blocking_task titles — self-referential PostgREST joins are unreliable,
+// so we look up blockers manually and fetch any missing ones in a single batch.
+async function resolveBlockingTasks(tasks: Task[]): Promise<void> {
+  const titleMap = new Map<string, string>()
+  for (const t of tasks) titleMap.set(t.id, t.title)
+
+  // Collect blocked_by IDs that aren't in the current result set
+  const missingIds = new Set<string>()
+  for (const t of tasks) {
+    if (t.blocked_by && !titleMap.has(t.blocked_by)) {
+      missingIds.add(t.blocked_by)
+    }
+  }
+
+  // Batch-fetch missing blocker titles
+  if (missingIds.size > 0) {
+    const { data } = await supabase
+      .from('tasks')
+      .select('id, title')
+      .in('id', [...missingIds])
+    if (data) {
+      for (const row of data) titleMap.set(row.id, row.title)
+    }
+  }
+
+  // Attach blocking_task to each task
+  for (const t of tasks) {
+    if (t.blocked_by && titleMap.has(t.blocked_by)) {
+      t.blocking_task = { id: t.blocked_by, title: titleMap.get(t.blocked_by)! }
+    }
+  }
 }
 
 export interface CompleteTaskResult {
@@ -35,7 +59,7 @@ export function useTasks(options: UseTasksOptions = {}) {
       // Fetch all open tasks (both parents and children)
       let query = supabase
         .from('tasks')
-        .select('*, project:projects(id, name, color), blocking_task:tasks!blocked_by(id, title)')
+        .select('*, project:projects(id, name, color)')
         .eq('status', 'open')
         .order('sort_order')
 
@@ -62,7 +86,8 @@ export function useTasks(options: UseTasksOptions = {}) {
 
       if (error) throw error
 
-      const allTasks = normalizeBlockingTask(data as Record<string, unknown>[])
+      const allTasks = data as Task[]
+      await resolveBlockingTasks(allTasks)
 
       // Build a map of task ID -> task
       const taskMap = new Map<string, Task>()
@@ -98,12 +123,14 @@ export function useTask(id: string | undefined) {
 
       const { data, error } = await supabase
         .from('tasks')
-        .select('*, subtasks:tasks(*), project:projects(id, name, color), blocking_task:tasks!blocked_by(id, title)')
+        .select('*, subtasks:tasks(*), project:projects(id, name, color)')
         .eq('id', id)
         .single()
 
       if (error) throw error
-      return normalizeBlockingTask([data as Record<string, unknown>])[0]
+      const task = data as Task
+      await resolveBlockingTasks([task])
+      return task
     },
     enabled: !!id,
   })
@@ -283,13 +310,15 @@ export function useAllProjectTasks(projectId: string | undefined) {
 
       const { data, error } = await supabase
         .from('tasks')
-        .select('*, project:projects(id, name, color), blocking_task:tasks!blocked_by(id, title)')
+        .select('*, project:projects(id, name, color)')
         .eq('project_id', projectId)
         .order('status')
         .order('sort_order')
 
       if (error) throw error
-      return normalizeBlockingTask(data as Record<string, unknown>[])
+      const tasks = data as Task[]
+      await resolveBlockingTasks(tasks)
+      return tasks
     },
     enabled: !!projectId,
   })
@@ -302,13 +331,15 @@ export function useCompletedTasks(limit: number = 100) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tasks')
-        .select('*, project:projects(id, name, color), blocking_task:tasks!blocked_by(id, title)')
+        .select('*, project:projects(id, name, color)')
         .eq('status', 'done')
         .order('completed_at', { ascending: false })
         .limit(limit)
 
       if (error) throw error
-      return normalizeBlockingTask(data as Record<string, unknown>[])
+      const tasks = data as Task[]
+      await resolveBlockingTasks(tasks)
+      return tasks
     },
   })
 }
