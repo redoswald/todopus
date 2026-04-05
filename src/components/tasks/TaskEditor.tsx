@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useProjects } from '@/hooks/useProjects'
 import { useCreateTask, useUpdateTask } from '@/hooks/useTasks'
@@ -30,6 +30,19 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
   const updateTask = useUpdateTask()
 
   const isEditing = !!task
+  const formRef = useRef<HTMLFormElement>(null)
+
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (formRef.current && !formRef.current.contains(e.target as Node)) {
+      onClose()
+    }
+  }, [onClose])
+
+  useEffect(() => {
+    if (!isEditing) return
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isEditing, handleClickOutside])
 
   useEffect(() => {
     if (task) {
@@ -85,7 +98,7 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
   ]
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 space-y-4">
       {error && (
         <div className="bg-red-50 text-red-600 p-2 rounded text-sm">
           {error}
