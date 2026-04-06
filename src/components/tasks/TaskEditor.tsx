@@ -431,6 +431,7 @@ function DependencySection({ task }: { task: Task }) {
                       setLocalDeps(prev => [...prev, { id: t.id, title: t.title }])
                       addDependency.mutate({ taskId: task.id, dependsOnTaskId: t.id })
                       setSearch('')
+                      setShowSearch(false)
                     }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-amber-50 transition-colors flex items-center gap-2"
                   >
