@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useProjects } from '@/hooks/useProjects'
-import { useCreateTask, useUpdateTask, useCompleteTask, useUncompleteTask, useDeleteTask, useSearchTasks, useAddDependency, useRemoveDependency } from '@/hooks/useTasks'
+import { useCreateTask, useCreateTasks, useUpdateTask, useCompleteTask, useUncompleteTask, useDeleteTask, useSearchTasks, useAddDependency, useRemoveDependency } from '@/hooks/useTasks'
 import { RecurrenceBuilder } from './RecurrenceBuilder'
+import { parseBulkPasteLines, isBulkPaste } from '@/lib/utils'
 import type { Task, CreateTaskInput } from '@/types'
 
 interface TaskEditorProps {
@@ -26,7 +27,10 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
   const [error, setError] = useState<string | null>(null)
 
   const { data: projects = [] } = useProjects()
+  const [bulkLines, setBulkLines] = useState<string[] | null>(null)
+
   const createTask = useCreateTask()
+  const createTasks = useCreateTasks()
   const updateTask = useUpdateTask()
 
   const isEditing = !!task
@@ -90,6 +94,49 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
     }
   }
 
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    if (isEditing) return
+    const text = e.clipboardData.getData('text/plain')
+    if (isBulkPaste(text)) {
+      e.preventDefault()
+      setBulkLines(parseBulkPasteLines(text))
+    }
+  }
+
+  function handleAddAsSingle() {
+    if (!bulkLines) return
+    setTitle(bulkLines.join(' '))
+    setBulkLines(null)
+  }
+
+  async function handleBulkCreate() {
+    if (!bulkLines) return
+    setError(null)
+
+    const inputs: CreateTaskInput[] = bulkLines.map(line => ({
+      title: line,
+      description: null,
+      project_id: projectId,
+      section_id: sectionId,
+      due_date: dueDate || null,
+      deadline: null,
+      priority: 0,
+      recurrence_rule: null,
+      recurrence_base_date: null,
+    }))
+
+    try {
+      await createTasks.mutateAsync(inputs)
+      toast(`${bulkLines.length} tasks created`)
+      setBulkLines(null)
+      onSaved?.()
+      onClose()
+    } catch (err) {
+      console.error('Bulk task creation error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create tasks')
+    }
+  }
+
   const priorityOptions = [
     { value: 0, label: 'None', color: 'bg-gray-300' },
     { value: 1, label: 'Low', color: 'bg-blue-400' },
@@ -110,10 +157,45 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        onPaste={handlePaste}
         placeholder="Task title"
         className="w-full text-lg font-medium border-none outline-none focus:ring-0 placeholder-gray-400"
         autoFocus
       />
+
+      {/* Bulk paste prompt */}
+      {bulkLines && (
+        <div className="bg-accent-50 border border-accent-200 rounded-md p-3 space-y-2">
+          <p className="text-sm text-accent-800">
+            Add as <strong>1 task</strong> or <strong>{bulkLines.length} tasks</strong>?
+          </p>
+          <div className="max-h-32 overflow-y-auto text-xs text-gray-600 space-y-0.5">
+            {bulkLines.slice(0, 5).map((line, i) => (
+              <div key={i} className="truncate">• {line}</div>
+            ))}
+            {bulkLines.length > 5 && (
+              <div className="text-gray-400">...and {bulkLines.length - 5} more</div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAddAsSingle}
+              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900"
+            >
+              Add as 1 task
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkCreate}
+              disabled={createTasks.isPending}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-accent-500 hover:bg-accent-600 rounded-md disabled:opacity-50"
+            >
+              {createTasks.isPending ? 'Adding...' : `Add ${bulkLines.length} tasks`}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       <div>

@@ -184,6 +184,29 @@ export function useCreateTask() {
   })
 }
 
+export function useCreateTasks() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (inputs: CreateTaskInput[]) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const rows = inputs.map(input => ({ ...input, owner_id: user.id }))
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert(rows)
+        .select()
+
+      if (error) throw error
+      return data as Task[]
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
+}
+
 export function useUpdateTask() {
   const queryClient = useQueryClient()
 
