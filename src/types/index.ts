@@ -47,6 +47,13 @@ export interface ProjectShareLink {
   created_at: string
 }
 
+export interface ProjectPlacement {
+  user_id: string
+  project_id: string
+  parent_id: string | null
+  sort_order: number
+}
+
 export interface Section {
   id: string
   project_id: string

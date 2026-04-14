@@ -13,7 +13,7 @@ import {
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProjects, useUpdateProject, useDeleteProject, useArchiveProject, useUnarchiveProject, useReorderProject, buildProjectTree, getDescendantIds, computeReorder } from '@/hooks/useProjects'
+import { useProjects, usePlacements, useUpdateProject, useDeleteProject, useArchiveProject, useUnarchiveProject, useReorderProject, buildProjectTree, getDescendantIds, computeReorder } from '@/hooks/useProjects'
 import { useInboxCount, useTodayCount, useUpdateTask } from '@/hooks/useTasks'
 import { ProjectContextMenu } from '@/components/shared/ProjectContextMenu'
 import { ConfirmDeleteModal } from '@/components/shared/ConfirmDeleteModal'
@@ -61,6 +61,7 @@ export function Sidebar({
 }: SidebarProps) {
   const { user, profile, signOut } = useAuth()
   const { data: projects = [] } = useProjects()
+  const { data: placements } = usePlacements()
   const { data: inboxCount = 0 } = useInboxCount()
   const { data: todayCount = 0 } = useTodayCount()
   const navigate = useNavigate()
@@ -72,7 +73,15 @@ export function Sidebar({
   const unarchiveProject = useUnarchiveProject()
   const reorderProject = useReorderProject()
 
-  const projectTree = buildProjectTree(projects)
+  // Apply placement overrides to get the user's view of the hierarchy
+  const placementMap = new Map(placements?.map(p => [p.project_id, p]) ?? [])
+  const placedProjects = projects.map(p => {
+    const placement = placementMap.get(p.id)
+    return placement
+      ? { ...p, parent_id: placement.parent_id, sort_order: placement.sort_order }
+      : p
+  })
+  const projectTree = buildProjectTree(projects, placements)
 
   // Drag indicator state for project reorder
   const [dragIndicator, setDragIndicator] = useState<DragIndicator | null>(null)
@@ -118,16 +127,16 @@ export function Sidebar({
 
   function handleProjectDrop(params: ProjectDropParams) {
     const { draggedId, targetId, zone, promote } = params
-    const descendants = getDescendantIds(projects, draggedId)
+    const descendants = getDescendantIds(placedProjects, draggedId)
     if (draggedId === targetId || descendants.has(targetId)) return
-    const draggedProject = projects.find(p => p.id === draggedId)
+    const draggedProject = placedProjects.find(p => p.id === draggedId)
     if (!draggedProject) return
-    const targetProject = projects.find(p => p.id === targetId)
+    const targetProject = placedProjects.find(p => p.id === targetId)
     if (!targetProject) return
 
     if (zone === 'nest') {
       // Nest under target — put at end of target's children
-      const childCount = projects.filter(p => p.parent_id === targetId).length
+      const childCount = placedProjects.filter(p => p.parent_id === targetId).length
       reorderProject.mutate([{
         id: draggedId,
         sort_order: childCount,
@@ -140,13 +149,13 @@ export function Sidebar({
       let newParentId: string | null
       if (promote) {
         // Promote: go to target's grandparent level
-        const targetParent = projects.find(p => p.id === targetProject.parent_id)
+        const targetParent = placedProjects.find(p => p.id === targetProject.parent_id)
         newParentId = targetParent?.parent_id ?? null
       } else {
         newParentId = targetProject.parent_id
       }
 
-      const updates = computeReorder(projects, draggedId, targetId, zone, newParentId)
+      const updates = computeReorder(placedProjects, draggedId, targetId, zone, newParentId)
       if (updates.length === 0) return
 
       reorderProject.mutate(updates, {
@@ -156,10 +165,10 @@ export function Sidebar({
   }
 
   function handleProjectDropToRoot(draggedId: string) {
-    const draggedProject = projects.find(p => p.id === draggedId)
+    const draggedProject = placedProjects.find(p => p.id === draggedId)
     if (!draggedProject) return
     if (draggedProject.parent_id === null) return
-    const rootCount = projects.filter(p => p.parent_id === null && p.id !== draggedId).length
+    const rootCount = placedProjects.filter(p => p.parent_id === null && p.id !== draggedId).length
     reorderProject.mutate([{
       id: draggedId,
       sort_order: rootCount,

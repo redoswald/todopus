@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { Project, CreateProjectInput, UpdateProjectInput } from '@/types'
+import type { Project, ProjectPlacement, CreateProjectInput, UpdateProjectInput } from '@/types'
 
 export function useProjects() {
   return useQuery({
@@ -14,6 +14,20 @@ export function useProjects() {
 
       if (error) throw error
       return data as Project[]
+    },
+  })
+}
+
+export function usePlacements() {
+  return useQuery({
+    queryKey: ['placements'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_placements')
+        .select('*')
+
+      if (error) throw error
+      return data as ProjectPlacement[]
     },
   })
 }
@@ -61,10 +75,21 @@ export function useCreateProject() {
         .single()
 
       if (error) throw error
-      return data as Project
+      const project = data as Project
+
+      // Create a placement for the owner
+      await supabase.from('project_placements').insert({
+        user_id: user.id,
+        project_id: project.id,
+        parent_id: input.parent_id ?? null,
+        sort_order: 0,
+      })
+
+      return project
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: ['placements'] })
     },
   })
 }
@@ -184,21 +209,32 @@ export function getDescendantIds(projects: Project[], projectId: string): Set<st
   return descendants
 }
 
-// Helper to build hierarchical tree from flat list
-export function buildProjectTree(projects: Project[]): Project[] {
+// Helper to build hierarchical tree from flat list, using per-user placements
+export function buildProjectTree(projects: Project[], placements?: ProjectPlacement[]): Project[] {
+  // Build a lookup from project_id -> placement
+  const placementMap = new Map<string, ProjectPlacement>()
+  if (placements) {
+    placements.forEach(p => placementMap.set(p.project_id, p))
+  }
+
   const map = new Map<string, Project>()
   const roots: Project[] = []
 
-  // First pass: create map
+  // First pass: create map, applying placement overrides
   projects.forEach(p => {
-    map.set(p.id, { ...p, children: [] })
+    const placement = placementMap.get(p.id)
+    map.set(p.id, {
+      ...p,
+      parent_id: placement ? placement.parent_id : p.parent_id,
+      sort_order: placement ? placement.sort_order : p.sort_order,
+      children: [],
+    })
   })
 
   // Second pass: build tree
-  projects.forEach(p => {
-    const project = map.get(p.id)!
-    if (p.parent_id && map.has(p.parent_id)) {
-      map.get(p.parent_id)!.children!.push(project)
+  map.forEach(project => {
+    if (project.parent_id && map.has(project.parent_id)) {
+      map.get(project.parent_id)!.children!.push(project)
     } else {
       roots.push(project)
     }
@@ -270,45 +306,54 @@ export function useReorderProject() {
 
   return useMutation({
     mutationFn: async (updates: ReorderUpdate[]) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      // Upsert placements for the current user
       const results = await Promise.all(
         updates.map(({ id, sort_order, parent_id }) => {
-          const patch: Record<string, unknown> = { sort_order }
-          if (parent_id !== undefined) patch.parent_id = parent_id
           return supabase
-            .from('projects')
-            .update(patch)
-            .eq('id', id)
+            .from('project_placements')
+            .upsert({
+              user_id: user.id,
+              project_id: id,
+              sort_order,
+              parent_id: parent_id !== undefined ? parent_id : null,
+            }, { onConflict: 'user_id,project_id' })
         }),
       )
       const firstError = results.find(r => r.error)
       if (firstError?.error) throw firstError.error
     },
     onMutate: async (updates) => {
-      await queryClient.cancelQueries({ queryKey: ['projects'] })
-      const previous = queryClient.getQueryData<Project[]>(['projects'])
+      await queryClient.cancelQueries({ queryKey: ['placements'] })
+      const previous = queryClient.getQueryData<ProjectPlacement[]>(['placements'])
 
-      queryClient.setQueryData<Project[]>(['projects'], (old) => {
+      queryClient.setQueryData<ProjectPlacement[]>(['placements'], (old) => {
         if (!old) return old
-        return old.map(p => {
-          const upd = updates.find(u => u.id === p.id)
-          if (!upd) return p
-          return {
-            ...p,
-            sort_order: upd.sort_order,
-            ...(upd.parent_id !== undefined ? { parent_id: upd.parent_id } : {}),
+        const updated = [...old]
+        for (const upd of updates) {
+          const idx = updated.findIndex(p => p.project_id === upd.id)
+          if (idx >= 0) {
+            updated[idx] = {
+              ...updated[idx],
+              sort_order: upd.sort_order,
+              ...(upd.parent_id !== undefined ? { parent_id: upd.parent_id } : {}),
+            }
           }
-        })
+        }
+        return updated
       })
 
       return { previous }
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['projects'], context.previous)
+        queryClient.setQueryData(['placements'], context.previous)
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: ['placements'] })
     },
   })
 }
