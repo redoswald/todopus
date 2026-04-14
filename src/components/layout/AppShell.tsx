@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar'
 import { MaestroDrawer } from '../maestro/MaestroDrawer'
 import { CommandPalette, useCommandPalette } from './CommandPalette'
 import { useSidebarResize } from '@/hooks/useSidebarResize'
+import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -12,6 +13,7 @@ export function AppShell() {
   const commandPalette = useCommandPalette()
   const sidebar = useSidebarResize()
   const navigate = useNavigate()
+  useRealtimeSync()
 
   return (
     <div className="h-screen flex bg-white overflow-hidden">
