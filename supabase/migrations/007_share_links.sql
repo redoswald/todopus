@@ -84,6 +84,11 @@ BEGIN
     VALUES (link_record.project_id, auth.uid(), link_record.permission)
     ON CONFLICT (project_id, shared_with_user_id) DO NOTHING;
 
+    -- Create a default placement (top-level) for the new user
+    INSERT INTO project_placements (user_id, project_id, parent_id, sort_order)
+    VALUES (auth.uid(), link_record.project_id, NULL, 0)
+    ON CONFLICT (user_id, project_id) DO NOTHING;
+
     RETURN link_record.project_id;
 END;
 $$;

@@ -6,7 +6,7 @@ import { TaskList } from '@/components/tasks/TaskList'
 import { TaskEditor } from '@/components/tasks/TaskEditor'
 import { ConfirmDeleteModal } from '@/components/shared/ConfirmDeleteModal'
 import { ProjectHeader } from './ProjectHeader'
-import { useProject, useProjects, useUpdateProject, useDeleteProject, useArchiveProject, getDescendantIds } from '@/hooks/useProjects'
+import { useProject, useProjects, usePlacements, useUpdateProject, useDeleteProject, useArchiveProject, useReorderProject, getDescendantIds } from '@/hooks/useProjects'
 import { useTasks } from '@/hooks/useTasks'
 import { useSections, useDeleteSection, Section } from '@/hooks/useSections'
 import { PROJECT_COLORS } from '@/lib/constants'
@@ -22,9 +22,11 @@ export function ProjectView() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: allProjects = [] } = useProjects()
+  const { data: placements } = usePlacements()
   const updateProject = useUpdateProject()
   const deleteProject = useDeleteProject()
   const archiveProject = useArchiveProject()
+  const reorderProject = useReorderProject()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [moveParentId, setMoveParentId] = useState<string>('')
   const [addingTaskToSection, setAddingTaskToSection] = useState<string | null>(null) // section id or 'none'
@@ -151,20 +153,27 @@ export function ProjectView() {
 
         {/* Move project section */}
         <MoveProjectSection
-          project={project}
+          project={{
+            ...project,
+            parent_id: placements?.find(p => p.project_id === projectId)?.parent_id ?? project.parent_id,
+          }}
           allProjects={allProjects}
           moveParentId={moveParentId}
           setMoveParentId={setMoveParentId}
           onMove={(newParentId) => {
             const name = project.name
-            updateProject.mutate({ id: projectId!, parent_id: newParentId }, {
+            reorderProject.mutate([{
+              id: projectId!,
+              sort_order: project.sort_order,
+              parent_id: newParentId,
+            }], {
               onSuccess: () => {
                 toast(`Moved "${name}"`)
                 setMoveParentId('')
               },
             })
           }}
-          isPending={updateProject.isPending}
+          isPending={reorderProject.isPending}
         />
 
         {/* Archive section */}
