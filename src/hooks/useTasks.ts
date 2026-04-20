@@ -117,17 +117,17 @@ export function useTasks(options: UseTasksOptions = {}) {
         taskMap.set(task.id, { ...task, subtasks: [] })
       }
 
-      // Attach subtasks to their parents
+      // Attach subtasks to their parents. Tasks whose parent is not in the
+      // open-set (e.g. parent was closed but cascade didn't reach this row)
+      // are promoted to top-level so they never silently vanish from the UI.
       const topLevelTasks: Task[] = []
       for (const task of allTasks) {
         const taskWithSubtasks = taskMap.get(task.id)!
         if (task.parent_task_id && taskMap.has(task.parent_task_id)) {
-          // This is a subtask - add to parent's subtasks array
           const parent = taskMap.get(task.parent_task_id)!
           parent.subtasks = parent.subtasks || []
           parent.subtasks.push(taskWithSubtasks)
-        } else if (!task.parent_task_id) {
-          // This is a top-level task
+        } else {
           topLevelTasks.push(taskWithSubtasks)
         }
       }
