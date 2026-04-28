@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Sparkles } from 'lucide-react'
@@ -35,6 +35,22 @@ export function ProjectView() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [dangerVisible, setDangerVisible] = useState(false)
   const dangerRef = useRef<HTMLDivElement>(null)
+
+  const subprojects = useMemo(() => {
+    if (!projectId) return []
+    const placementMap = new Map(placements?.map(p => [p.project_id, p]) ?? [])
+    return allProjects
+      .filter(p => {
+        const effectiveParentId = placementMap.get(p.id)?.parent_id ?? p.parent_id
+        return effectiveParentId === projectId
+      })
+      .map(p => ({
+        ...p,
+        sort_order: placementMap.get(p.id)?.sort_order ?? p.sort_order,
+      }))
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(p => ({ id: p.id, name: p.name, color: p.color }))
+  }, [allProjects, placements, projectId])
 
   useEffect(() => {
     if (searchParams.get('add') === 'true') {
@@ -81,7 +97,7 @@ export function ProjectView() {
     <MainPanel title={project.name}>
       <div className="max-w-2xl mx-auto">
         {/* Project header with description and organize */}
-        <ProjectHeader project={project} sections={sections} />
+        <ProjectHeader project={project} sections={sections} subprojects={subprojects} />
 
         {/* Unsectioned tasks */}
         {unsectionedTasks.length > 0 && (
@@ -97,7 +113,7 @@ export function ProjectView() {
         )}
 
         {/* Empty project state — only when truly empty and not currently adding */}
-        {unsectionedTasks.length === 0 && sections.length === 0 && addingTaskToSection !== 'none' && (
+        {unsectionedTasks.length === 0 && sections.length === 0 && subprojects.length === 0 && addingTaskToSection !== 'none' && (
           <EmptyState
             icon={Sparkles}
             title="A fresh project"
@@ -114,7 +130,7 @@ export function ProjectView() {
               onClose={() => setAddingTaskToSection(null)}
             />
           </div>
-        ) : (unsectionedTasks.length > 0 || sections.length > 0) ? (
+        ) : (unsectionedTasks.length > 0 || sections.length > 0 || subprojects.length > 0) ? (
           <button
             onClick={() => setAddingTaskToSection('none')}
             className="mb-6 flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-accent-600 transition-colors"
