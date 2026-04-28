@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Markdown from 'react-markdown'
 import { useUpdateProject } from '@/hooks/useProjects'
 import { useCreateSection } from '@/hooks/useSections'
@@ -9,9 +10,10 @@ const COLLAPSED_DESCRIPTION_HEIGHT = 240
 interface ProjectHeaderProps {
   project: Project
   sections?: Array<{ id: string; name: string }>
+  subprojects?: Array<{ id: string; name: string; color: string }>
 }
 
-export function ProjectHeader({ project, sections }: ProjectHeaderProps) {
+export function ProjectHeader({ project, sections, subprojects }: ProjectHeaderProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [name, setName] = useState(project.name)
   const [isEditingDesc, setIsEditingDesc] = useState(false)
@@ -217,6 +219,29 @@ export function ProjectHeader({ project, sections }: ProjectHeaderProps) {
           </button>
         )}
       </div>
+
+      {/* Subprojects */}
+      {subprojects && subprojects.length > 0 && (
+        <div className="p-4 bg-white border-b border-gray-200">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Subprojects</h3>
+          <ul className="space-y-1">
+            {subprojects.map((sub) => (
+              <li key={sub.id}>
+                <Link
+                  to={`/project/${sub.id}`}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-accent-600 py-1"
+                >
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: sub.color }}
+                  />
+                  {sub.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Organize section - Table of Contents */}
       <div className="p-4 bg-white">
