@@ -17,6 +17,7 @@ import { useProjects, usePlacements, useUpdateProject, useDeleteProject, useArch
 import { useInboxCount, useTodayCount, useUpdateTask } from '@/hooks/useTasks'
 import { ProjectContextMenu } from '@/components/shared/ProjectContextMenu'
 import { ConfirmDeleteModal } from '@/components/shared/ConfirmDeleteModal'
+import { ProjectTreeSkeleton } from '@/components/shared/skeletons'
 import { AppSwitcher } from './AppSwitcher'
 import { AccountMenu } from './AccountMenu'
 import type { Project } from '@/types'
@@ -60,7 +61,7 @@ export function Sidebar({
   onOpenMaestro,
 }: SidebarProps) {
   const { user, profile, signOut } = useAuth()
-  const { data: projects = [] } = useProjects()
+  const { data: projects = [], isLoading: projectsLoading } = useProjects()
   const { data: placements } = usePlacements()
   const { data: inboxCount = 0 } = useInboxCount()
   const { data: todayCount = 0 } = useTodayCount()
@@ -320,6 +321,7 @@ export function Sidebar({
               {/* Projects */}
               <div className="mt-6" onDragEnd={handleDragEnd}>
                 <ProjectsHeader onClose={onClose} onProjectDrop={handleProjectDropToRoot} />
+                {projectsLoading && <ProjectTreeSkeleton />}
                 <div className="space-y-0.5">
                   {projectTree.map((project) => (
                     <ProjectItem

@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { useArchivedProjects, useUnarchiveProject } from '@/hooks/useProjects'
 import { useAllProjectTasks } from '@/hooks/useTasks'
+import { ProjectListSkeleton } from '@/components/shared/skeletons'
 import type { Project, Task } from '@/types'
 
 export function ArchiveView() {
@@ -12,9 +13,7 @@ export function ArchiveView() {
     <MainPanel title="Archive">
       <div className="max-w-2xl mx-auto">
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-500" />
-          </div>
+          <ProjectListSkeleton />
         ) : projects.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <Archive className="w-8 h-8 mx-auto mb-3 text-gray-300" />
