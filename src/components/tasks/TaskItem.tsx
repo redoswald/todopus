@@ -61,6 +61,10 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
     return stored !== null ? stored : defaultExpanded
   })
 
+  // Brief celebratory state between the checkbox click and the task
+  // actually completing (and leaving the list)
+  const [isCompleting, setIsCompleting] = useState(false)
+
   const isCompleted = task.status === 'done'
   const hasDependencies = task.dependencies && task.dependencies.length > 0
   const dueDate = task.due_date ? parseISO(task.due_date) : null
@@ -74,8 +78,13 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
     e.stopPropagation()
     if (isCompleted) {
       uncompleteTask.mutate(task.id)
-    } else {
+      return
+    }
+    if (isCompleting) return
+    setIsCompleting(true)
+    window.setTimeout(() => {
       completeTask.mutate(task, {
+        onError: () => setIsCompleting(false),
         onSuccess: (result) => {
           const nextDate = result.nextTask?.due_date
           const message = nextDate
@@ -95,7 +104,7 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
           })
         },
       })
-    }
+    }, 600)
   }
 
   function handleDragStart(e: React.DragEvent) {
@@ -155,7 +164,8 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
           'group flex items-start gap-3 px-3 py-2 rounded-md transition-colors',
           onClick && 'cursor-pointer hover:bg-gray-50',
           draggable && 'cursor-grab active:cursor-grabbing',
-          depth > 0 && 'border-l-2 border-gray-200 ml-3'
+          depth > 0 && 'border-l-2 border-gray-200 ml-3',
+          isCompleting && 'opacity-60 transition-opacity duration-500'
         )}
       >
       {/* Checkbox */}
@@ -164,10 +174,11 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
         className={cn(
           'mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 transition-colors',
           priorityColors[task.priority],
-          isCompleted && 'bg-gray-300 border-gray-300'
+          isCompleted && 'bg-gray-300 border-gray-300',
+          isCompleting && 'bg-accent-500 border-accent-500 animate-check-pop'
         )}
       >
-        {isCompleted && (
+        {(isCompleted || isCompleting) && (
           <svg className="w-full h-full text-white p-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
@@ -179,8 +190,8 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
         <div className="flex items-center gap-2">
           <span
             className={cn(
-              'text-gray-900',
-              isCompleted && 'line-through text-gray-400'
+              'text-gray-900 transition-colors',
+              (isCompleted || isCompleting) && 'line-through text-gray-400'
             )}
           >
             {task.title}
