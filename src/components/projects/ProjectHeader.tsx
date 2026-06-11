@@ -22,7 +22,11 @@ export function ProjectHeader({ project, sections, subprojects }: ProjectHeaderP
   const [sectionName, setSectionName] = useState('')
   const [isDescExpanded, setIsDescExpanded] = useState(false)
   const [isDescOverflowing, setIsDescOverflowing] = useState(false)
+  const [descSaveState, setDescSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const descContentRef = useRef<HTMLDivElement>(null)
+  const descTimerRef = useRef<number | null>(null)
+  const pendingDescSaveRef = useRef<(() => void) | null>(null)
+  const lastSavedDescRef = useRef(project.description ?? '')
 
   const updateProject = useUpdateProject()
   const createSection = useCreateSection()
@@ -37,8 +41,19 @@ export function ProjectHeader({ project, sections, subprojects }: ProjectHeaderP
   }, [project.description, isEditingDesc])
 
   useEffect(() => {
+    // Flush any pending edit for the previous project, then sync local
+    // state to the newly displayed one
+    flushPendingDescSave()
     setIsDescExpanded(false)
+    setIsEditingDesc(false)
+    setDescription(project.description ?? '')
+    lastSavedDescRef.current = project.description ?? ''
+    setDescSaveState('idle')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id])
+
+  // Flush a pending edit if the component unmounts mid-debounce
+  useEffect(() => () => flushPendingDescSave(), [])
 
   async function handleSaveName() {
     if (!name.trim()) return
@@ -53,16 +68,50 @@ export function ProjectHeader({ project, sections, subprojects }: ProjectHeaderP
     }
   }
 
-  async function handleSaveDescription() {
+  async function saveDescription(value: string, projectId: string) {
+    const normalized = value.trim() || null
+    if (projectId !== project.id) {
+      // Flushing an edit for a project we've already navigated away from —
+      // persist it, but don't touch the indicator for the current project
+      updateProject.mutate({ id: projectId, description: normalized })
+      return
+    }
+    if (normalized === (lastSavedDescRef.current.trim() || null)) return
+    setDescSaveState('saving')
     try {
-      await updateProject.mutateAsync({
-        id: project.id,
-        description: description.trim() || null,
-      })
-      setIsEditingDesc(false)
+      await updateProject.mutateAsync({ id: projectId, description: normalized })
+      lastSavedDescRef.current = value
+      setDescSaveState('saved')
     } catch (err) {
       console.error('Failed to update description:', err)
+      setDescSaveState('error')
     }
+  }
+
+  function handleDescriptionChange(value: string) {
+    setDescription(value)
+    if (descTimerRef.current) window.clearTimeout(descTimerRef.current)
+    const projectId = project.id
+    const save = () => {
+      descTimerRef.current = null
+      pendingDescSaveRef.current = null
+      void saveDescription(value, projectId)
+    }
+    pendingDescSaveRef.current = save
+    descTimerRef.current = window.setTimeout(save, 800)
+  }
+
+  function flushPendingDescSave() {
+    if (descTimerRef.current) {
+      window.clearTimeout(descTimerRef.current)
+      descTimerRef.current = null
+    }
+    pendingDescSaveRef.current?.()
+  }
+
+  function handleDoneEditingDesc() {
+    flushPendingDescSave()
+    setIsEditingDesc(false)
   }
 
   async function handleAddSection(e: React.FormEvent) {
@@ -136,29 +185,30 @@ export function ProjectHeader({ project, sections, subprojects }: ProjectHeaderP
           <div className="space-y-2">
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => handleDescriptionChange(e.target.value)}
               placeholder="Describe this project... What is it? What does 'done' look like? Any important context? (Markdown supported)"
               rows={4}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-accent-500 resize-none"
               autoFocus
             />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
-                onClick={handleSaveDescription}
-                disabled={updateProject.isPending}
-                className="px-3 py-1.5 text-sm font-medium text-white bg-accent-500 hover:bg-accent-600 rounded-md disabled:opacity-50"
+                onClick={handleDoneEditingDesc}
+                className="px-3 py-1.5 text-sm font-medium text-white bg-accent-500 hover:bg-accent-600 rounded-md"
               >
-                {updateProject.isPending ? 'Saving...' : 'Save'}
+                Done
               </button>
-              <button
-                onClick={() => {
-                  setDescription(project.description ?? '')
-                  setIsEditingDesc(false)
-                }}
-                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900"
+              <span
+                className={
+                  descSaveState === 'error' ? 'text-xs text-red-500' : 'text-xs text-gray-400'
+                }
+                role="status"
               >
-                Cancel
-              </button>
+                {descSaveState === 'saving' && 'Saving…'}
+                {descSaveState === 'saved' && 'Saved'}
+                {descSaveState === 'error' && "Couldn't save — check your connection"}
+                {descSaveState === 'idle' && 'Saves automatically as you type'}
+              </span>
             </div>
           </div>
         ) : project.description ? (

@@ -36,8 +36,31 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
   const isEditing = !!task
   const formRef = useRef<HTMLFormElement>(null)
 
+  // Clicking outside the editor closes it; unsaved edits are saved rather
+  // than silently dropped. The ref keeps the document listener stable while
+  // always seeing the latest field state.
+  const saveOnCloseRef = useRef<() => void>(() => {})
+  saveOnCloseRef.current = () => {
+    if (!task || !hasUnsavedChanges()) return
+    if (!title.trim()) {
+      toast("Changes not saved — task title can't be empty")
+      return
+    }
+    updateTask
+      .mutateAsync({ id: task.id, ...buildTaskData() })
+      .then(() => {
+        toast('Changes saved')
+        onSaved?.()
+      })
+      .catch((err) => {
+        console.error('Task save error:', err)
+        toast('Failed to save changes')
+      })
+  }
+
   const handleClickOutside = useCallback((e: MouseEvent) => {
     if (formRef.current && !formRef.current.contains(e.target as Node)) {
+      saveOnCloseRef.current()
       onClose()
     }
   }, [onClose])
@@ -60,13 +83,8 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
     }
   }, [task])
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-
-    if (!title.trim()) return
-
-    const data: CreateTaskInput = {
+  function buildTaskData(): CreateTaskInput {
+    return {
       title: title.trim(),
       description: description.trim() || null,
       project_id: projectId,
@@ -77,6 +95,28 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
       recurrence_rule: recurrenceRule,
       recurrence_base_date: recurrenceRule && dueDate ? dueDate : null,
     }
+  }
+
+  function hasUnsavedChanges(): boolean {
+    if (!task) return false
+    return (
+      title.trim() !== task.title ||
+      (description.trim() || null) !== (task.description ?? null) ||
+      projectId !== (task.project_id ?? null) ||
+      (dueDate || null) !== (task.due_date ?? null) ||
+      (deadline || null) !== (task.deadline ?? null) ||
+      priority !== task.priority ||
+      recurrenceRule !== (task.recurrence_rule ?? null)
+    )
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+
+    if (!title.trim()) return
+
+    const data = buildTaskData()
 
     try {
       if (isEditing) {
