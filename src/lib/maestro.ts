@@ -268,7 +268,7 @@ export function formatContextForAI(context: MaestroContext): string {
     tasksByProject.get(key)!.push(task)
   }
 
-  let contextStr = `## Current Task Data
+  const contextStr = `## Current Task Data
 
 ### Summary
 - Total open tasks: ${openTasks.length}
