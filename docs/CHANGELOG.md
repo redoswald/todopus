@@ -4,6 +4,13 @@ All notable changes to Intend will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Tier 2 polish)
+- Loading skeletons for all task views, project view, archive, and the sidebar project tree (replacing the bare spinner)
+- Task completion animation — checkbox fills and pops, title strikes through, brief pause before the task leaves the list
+- Auto-save for project descriptions (debounced, with Saving/Saved indicator); pending edits flush on Done, navigation, and unmount
+- Task editor saves dirty edits when clicking outside instead of silently discarding them (Cancel remains the explicit discard)
+- Soft delete for tasks (`deleted_at`, migration 013) with a DB trigger cascading to subtasks; delete undo now restores the original task — subtasks, dependencies, and history intact — instead of recreating a snapshot. MCP server updated to match.
+
 ### Changed
 - Renamed product from "Opus"/"Todopus" to "Intend" as part of the Done Intentionally suite. Package name `todopus` → `intend-web`. UI copy, metadata, cross-app link, localStorage keys (with one-time migration), drag-and-drop MIME types, and shared design system doc updated. Claude Opus model references preserved.
 - Deleted obsolete "Maestro fits the musical theme of Opus" naming rationale from Maestro-AI-spec.md (the musical pun no longer tracks).
