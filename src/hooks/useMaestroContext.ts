@@ -23,6 +23,7 @@ export function useMaestroContext() {
           .from('tasks')
           .select('*, project:projects(id, name, color)')
           .eq('status', 'open')
+          .is('deleted_at', null)
           .order('sort_order'),
       ])
 
