@@ -35,6 +35,10 @@ Todoist-like task manager with AI planning (Maestro). Built with React 18, TypeS
 
 The database is shared with the "Friends" app. PascalCase tables (`Contact`, `Event`, etc.) belong to Friends — do not modify them.
 
+## Design System
+
+The aaronOS design system has moved to the suite-level docs folder: `../docs/design-system.md` (i.e. `aaronOS/docs/design-system.md`). It applies to every app in the suite. Per-app personality and the orange accent palette are documented there.
+
 ## Deployment
 
 Vercel auto-deploys on push to `main`. Use `vercel --prod` for direct local deploys.

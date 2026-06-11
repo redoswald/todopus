@@ -48,7 +48,7 @@
 
 ### Tier 2 — Polish & Trust
 
-- [ ] **Empty states** — Friendly zero-states for Inbox, Today, Upcoming, Completed, empty projects, and Maestro without API key
+- [x] ~~**Empty states**~~ — Done. Friendly zero-states for Inbox, Today, Upcoming, Completed, empty projects, and Maestro without API key
 - [ ] **Loading skeletons** — Skeleton placeholders for task lists, project tree, Today view while data fetches
 - [ ] **Save indicators** — Auto-save with "Saved"/"Saving..." feedback for project descriptions and task notes. Silent loss of edits is unacceptable
 - [ ] **Task delete undo** — Trash icon exists but needs undo toast. Soft delete (`deleted_at` column) so nothing is truly gone
