@@ -49,10 +49,10 @@
 ### Tier 2 — Polish & Trust
 
 - [x] ~~**Empty states**~~ — Done. Friendly zero-states for Inbox, Today, Upcoming, Completed, empty projects, and Maestro without API key
-- [ ] **Loading skeletons** — Skeleton placeholders for task lists, project tree, Today view while data fetches
-- [ ] **Save indicators** — Auto-save with "Saved"/"Saving..." feedback for project descriptions and task notes. Silent loss of edits is unacceptable
-- [ ] **Task delete undo** — Trash icon exists but needs undo toast. Soft delete (`deleted_at` column) so nothing is truly gone
-- [ ] **Task completion animation** — Satisfying check animation, brief delay before task disappears from active lists
+- [x] ~~**Loading skeletons**~~ — Done. Skeleton placeholders for task lists, project view, archive, and sidebar project tree
+- [x] ~~**Save indicators**~~ — Done. Project descriptions auto-save (debounced) with Saving/Saved indicator; task editor saves on click-outside instead of discarding
+- [x] ~~**Task delete undo**~~ — Done. Soft delete (`deleted_at`, migration 013) with cascade trigger; undo restores the original task with subtasks/dependencies/history
+- [x] ~~**Task completion animation**~~ — Done. Checkbox fill + pop, strikethrough, brief delay before the task leaves the list
 
 ### Tier 3 — Power User
 

@@ -3,6 +3,7 @@ import { format, parseISO, isToday, isYesterday, isThisWeek, isThisYear } from '
 import { CheckCheck } from 'lucide-react'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { TaskListSkeleton } from '@/components/shared/skeletons'
 import { useCompletedTasks, useUpdateTask, useUncompleteTask } from '@/hooks/useTasks'
 import type { Task } from '@/types'
 
@@ -17,9 +18,7 @@ export function CompletedView() {
     <MainPanel title="Completed">
       <div className="max-w-2xl mx-auto">
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-500" />
-          </div>
+          <TaskListSkeleton />
         ) : tasks.length === 0 ? (
           <EmptyState
             icon={CheckCheck}

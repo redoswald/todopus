@@ -7,6 +7,7 @@ import { TaskList } from '@/components/tasks/TaskList'
 import { TaskEditor } from '@/components/tasks/TaskEditor'
 import { ConfirmDeleteModal } from '@/components/shared/ConfirmDeleteModal'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { ProjectHeaderSkeleton, TaskListSkeleton } from '@/components/shared/skeletons'
 import { ProjectHeader } from './ProjectHeader'
 import { useProject, useProjects, usePlacements, useUpdateProject, useDeleteProject, useArchiveProject, useReorderProject, getDescendantIds } from '@/hooks/useProjects'
 import { useTasks } from '@/hooks/useTasks'
@@ -75,9 +76,10 @@ export function ProjectView() {
 
   if (isLoading) {
     return (
-      <MainPanel title="Loading...">
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-500" />
+      <MainPanel title={project?.name ?? ''}>
+        <div className="max-w-2xl mx-auto">
+          <ProjectHeaderSkeleton />
+          <TaskListSkeleton />
         </div>
       </MainPanel>
     )

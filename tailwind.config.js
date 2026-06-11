@@ -105,6 +105,16 @@ export default {
         lg:     'var(--shadow-lg)',
         accent: '0 4px 12px var(--accent-shadow)',
       },
+      keyframes: {
+        'check-pop': {
+          '0%': { transform: 'scale(1)' },
+          '40%': { transform: 'scale(1.3)' },
+          '100%': { transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        'check-pop': 'check-pop 0.3s ease-in-out',
+      },
     },
   },
   plugins: [

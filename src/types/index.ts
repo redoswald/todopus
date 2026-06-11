@@ -83,6 +83,7 @@ export interface Task {
   blocked_by: string | null
   sort_order: number
   completed_at: string | null
+  deleted_at: string | null
   created_at: string
   updated_at: string
   todoist_id?: string | null

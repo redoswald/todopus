@@ -83,6 +83,7 @@ export function useTasks(options: UseTasksOptions = {}) {
         .from('tasks')
         .select('*, project:projects(id, name, color)')
         .eq('status', 'open')
+        .is('deleted_at', null)
         .order('sort_order')
 
       if (inbox) {
@@ -147,6 +148,7 @@ export function useTask(id: string | undefined) {
         .from('tasks')
         .select('*, subtasks:tasks(*), project:projects(id, name, color)')
         .eq('id', id)
+        .is('subtasks.deleted_at', null)
         .single()
 
       if (error) throw error
@@ -227,6 +229,8 @@ export function useUpdateTask() {
   })
 }
 
+// Soft delete: sets deleted_at so the task (and, via DB trigger, its
+// descendants) disappears from every view but can be restored by undo.
 export function useDeleteTask() {
   const queryClient = useQueryClient()
 
@@ -234,7 +238,27 @@ export function useDeleteTask() {
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('tasks')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
+}
+
+// Undo for soft delete: clears deleted_at; the DB trigger restores
+// descendants that were deleted in the same batch.
+export function useRestoreTask() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ deleted_at: null })
         .eq('id', id)
 
       if (error) throw error
@@ -350,6 +374,7 @@ export function useAllProjectTasks(projectId: string | undefined) {
         .from('tasks')
         .select('*, project:projects(id, name, color)')
         .eq('project_id', projectId)
+        .is('deleted_at', null)
         .order('status')
         .order('sort_order')
 
@@ -371,6 +396,7 @@ export function useCompletedTasks(limit: number = 100) {
         .from('tasks')
         .select('*, project:projects(id, name, color)')
         .eq('status', 'done')
+        .is('deleted_at', null)
         .order('completed_at', { ascending: false })
         .limit(limit)
 
@@ -391,6 +417,7 @@ export function useInboxCount() {
         .from('tasks')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'open')
+        .is('deleted_at', null)
         .is('project_id', null)
 
       if (error) throw error
@@ -407,6 +434,7 @@ export function useSearchTasks(query: string) {
         .from('tasks')
         .select('id, title, due_date, project_id, project:projects(id, name, color)')
         .eq('status', 'open')
+        .is('deleted_at', null)
         .ilike('title', `%${query}%`)
         .limit(8)
 
@@ -427,6 +455,7 @@ export function useTodayCount() {
         .from('tasks')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'open')
+        .is('deleted_at', null)
         .lte('due_date', todayStr)
 
       if (error) throw error

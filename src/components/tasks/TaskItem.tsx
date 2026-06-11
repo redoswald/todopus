@@ -4,10 +4,10 @@ import { cn } from '@/lib/utils'
 import { format, isToday, isPast, parseISO } from 'date-fns'
 import Markdown from 'react-markdown'
 import { toast } from 'sonner'
-import { useCompleteTask, useUncompleteTask, useDeleteTask, useCreateTask } from '@/hooks/useTasks'
+import { useCompleteTask, useUncompleteTask, useDeleteTask, useRestoreTask } from '@/hooks/useTasks'
 import { TaskEditor } from './TaskEditor'
 import { describeRecurrence } from '@/lib/recurrenceHelper'
-import type { Task, CreateTaskInput } from '@/types'
+import type { Task } from '@/types'
 
 interface TaskItemProps {
   task: Task
@@ -53,13 +53,17 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
   const completeTask = useCompleteTask()
   const uncompleteTask = useUncompleteTask()
   const deleteTask = useDeleteTask()
-  const createTask = useCreateTask()
+  const restoreTask = useRestoreTask()
 
   // Use stored state if available, otherwise use defaultExpanded
   const [isExpanded, setIsExpanded] = useState(() => {
     const stored = getExpandedState(task.id)
     return stored !== null ? stored : defaultExpanded
   })
+
+  // Brief celebratory state between the checkbox click and the task
+  // actually completing (and leaving the list)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   const isCompleted = task.status === 'done'
   const hasDependencies = task.dependencies && task.dependencies.length > 0
@@ -74,8 +78,13 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
     e.stopPropagation()
     if (isCompleted) {
       uncompleteTask.mutate(task.id)
-    } else {
+      return
+    }
+    if (isCompleting) return
+    setIsCompleting(true)
+    window.setTimeout(() => {
       completeTask.mutate(task, {
+        onError: () => setIsCompleting(false),
         onSuccess: (result) => {
           const nextDate = result.nextTask?.due_date
           const message = nextDate
@@ -95,7 +104,7 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
           })
         },
       })
-    }
+    }, 600)
   }
 
   function handleDragStart(e: React.DragEvent) {
@@ -108,26 +117,13 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
 
   function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
-    const snapshot: CreateTaskInput = {
-      title: task.title,
-      description: task.description ?? null,
-      project_id: task.project_id ?? null,
-      section_id: task.section_id ?? null,
-      parent_task_id: task.parent_task_id ?? null,
-      priority: task.priority,
-      due_date: task.due_date ?? null,
-      due_time: task.due_time ?? null,
-      deadline: task.deadline ?? null,
-      recurrence_rule: task.recurrence_rule ?? null,
-      recurrence_base_date: task.recurrence_base_date ?? null,
-    }
     deleteTask.mutate(task.id, {
       onSuccess: () => {
         toast(`"${task.title}" deleted`, {
           duration: 5000,
           action: {
             label: 'Undo',
-            onClick: () => createTask.mutate(snapshot),
+            onClick: () => restoreTask.mutate(task.id),
           },
         })
       },
@@ -155,7 +151,8 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
           'group flex items-start gap-3 px-3 py-2 rounded-md transition-colors',
           onClick && 'cursor-pointer hover:bg-gray-50',
           draggable && 'cursor-grab active:cursor-grabbing',
-          depth > 0 && 'border-l-2 border-gray-200 ml-3'
+          depth > 0 && 'border-l-2 border-gray-200 ml-3',
+          isCompleting && 'opacity-60 transition-opacity duration-500'
         )}
       >
       {/* Checkbox */}
@@ -164,10 +161,11 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
         className={cn(
           'mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 transition-colors',
           priorityColors[task.priority],
-          isCompleted && 'bg-gray-300 border-gray-300'
+          isCompleted && 'bg-gray-300 border-gray-300',
+          isCompleting && 'bg-accent-500 border-accent-500 animate-check-pop'
         )}
       >
-        {isCompleted && (
+        {(isCompleted || isCompleting) && (
           <svg className="w-full h-full text-white p-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
@@ -179,8 +177,8 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
         <div className="flex items-center gap-2">
           <span
             className={cn(
-              'text-gray-900',
-              isCompleted && 'line-through text-gray-400'
+              'text-gray-900 transition-colors',
+              (isCompleted || isCompleting) && 'line-through text-gray-400'
             )}
           >
             {task.title}

@@ -5,6 +5,7 @@ import { MainPanel } from '@/components/layout/MainPanel'
 import { TaskList } from '@/components/tasks/TaskList'
 import { TaskEditor } from '@/components/tasks/TaskEditor'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { TaskListSkeleton } from '@/components/shared/skeletons'
 import { useTasks } from '@/hooks/useTasks'
 import type { Task } from '@/types'
 
@@ -25,9 +26,7 @@ export function InboxView() {
     <MainPanel title="Inbox">
       <div className="max-w-2xl mx-auto">
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-500" />
-          </div>
+          <TaskListSkeleton />
         ) : tasks.length === 0 && !showAddTask ? (
           <EmptyState
             icon={Inbox}
