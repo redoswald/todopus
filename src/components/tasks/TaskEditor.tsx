@@ -21,6 +21,7 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
   const [projectId, setProjectId] = useState<string | null>(task?.project_id ?? defaultProjectId ?? null)
   const [sectionId] = useState<string | null>(task?.section_id ?? defaultSectionId ?? null)
   const [dueDate, setDueDate] = useState(task?.due_date ?? defaultDueDate ?? '')
+  const [dueTime, setDueTime] = useState(task?.due_time?.slice(0, 5) ?? '')
   const [deadline, setDeadline] = useState(task?.deadline ?? '')
   const [priority, setPriority] = useState(task?.priority ?? 0)
   const [recurrenceRule, setRecurrenceRule] = useState<string | null>(task?.recurrence_rule ?? null)
@@ -77,6 +78,7 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
       setDescription(task.description ?? '')
       setProjectId(task.project_id)
       setDueDate(task.due_date ?? '')
+      setDueTime(task.due_time?.slice(0, 5) ?? '')
       setDeadline(task.deadline ?? '')
       setPriority(task.priority)
       setRecurrenceRule(task.recurrence_rule ?? null)
@@ -90,6 +92,7 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
       project_id: projectId,
       section_id: sectionId,
       due_date: dueDate || null,
+      due_time: dueDate && dueTime ? dueTime : null,
       deadline: deadline || null,
       priority,
       recurrence_rule: recurrenceRule,
@@ -104,6 +107,7 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
       (description.trim() || null) !== (task.description ?? null) ||
       projectId !== (task.project_id ?? null) ||
       (dueDate || null) !== (task.due_date ?? null) ||
+      (dueTime || null) !== (task.due_time?.slice(0, 5) ?? null) ||
       (deadline || null) !== (task.deadline ?? null) ||
       priority !== task.priority ||
       recurrenceRule !== (task.recurrence_rule ?? null)
@@ -267,7 +271,7 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
           ))}
         </select>
 
-        {/* Due date (scheduled) */}
+        {/* Due date (scheduled) + optional time */}
         <div className="flex items-center gap-1">
           <span className="text-xs text-gray-500">Scheduled:</span>
           <input
@@ -276,6 +280,15 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
             onChange={(e) => setDueDate(e.target.value)}
             className="text-sm border border-gray-200 rounded-md px-2 py-1.5"
           />
+          {dueDate && (
+            <input
+              type="time"
+              value={dueTime}
+              onChange={(e) => setDueTime(e.target.value)}
+              className="text-sm border border-gray-200 rounded-md px-2 py-1.5"
+              title="Time (optional)"
+            />
+          )}
         </div>
 
         {/* Deadline (hard deadline) */}
