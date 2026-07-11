@@ -11,7 +11,7 @@ A Todoist-like task manager with first-class support for AI-assisted planning. T
 | Backend | Supabase (Postgres + Auth + RLS) |
 | Build | Vite |
 | Hosting | Vercel |
-| AI | Anthropic API (Claude) |
+| AI | MCP server (`../intend-mcp`) — bring your own assistant |
 
 ## Getting Started
 
@@ -41,13 +41,12 @@ intend-web/
 │   ├── components/
 │   │   ├── auth/          # Login, Signup, AuthGuard
 │   │   ├── layout/        # AppShell, Sidebar, MainPanel, CommandPalette
-│   │   ├── maestro/       # AI assistant drawer and settings
 │   │   ├── projects/      # ProjectView, ProjectHeader, NewProjectPage
 │   │   ├── tasks/         # TaskItem, TaskList, TaskEditor
 │   │   └── views/         # Inbox, Today, Upcoming, Completed
 │   ├── contexts/          # AuthContext
 │   ├── hooks/             # useTasks, useProjects, useSections, etc.
-│   ├── lib/               # Supabase client, query client, maestro, recurrence
+│   ├── lib/               # Supabase client, query client, recurrence
 │   ├── types/             # TypeScript type definitions
 │   ├── App.tsx
 │   └── main.tsx

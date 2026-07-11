@@ -4,6 +4,12 @@ All notable changes to Intend will be documented in this file.
 
 ## [Unreleased]
 
+### Removed (Maestro teardown — MCP-first pivot)
+- Maestro AI chat: drawer, sidebar entry, command-palette action, and landing-page copy. AI access is now MCP-first — users connect their own assistant via the Intend MCP server; contextual AI handoff links are planned as the replacement (see `../../docs/future-phases.md` Phase 1).
+- BYOK settings: "Maestro AI" card on the settings page and the `anthropic_api_key` storage behind it (`useSettings` hook deleted).
+- Browser-side Anthropic SDK (`@anthropic-ai/sdk` with `dangerouslyAllowBrowser`) uninstalled.
+- Migration 014 drops the unused Maestro chat schema: `conversations`, `messages`, and `user_settings` (reverses migration 005).
+
 ### Added (Tier 2 polish)
 - Loading skeletons for all task views, project view, archive, and the sidebar project tree (replacing the bare spinner)
 - Task completion animation — checkbox fills and pops, title strikes through, brief pause before the task leaves the list

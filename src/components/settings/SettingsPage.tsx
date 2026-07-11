@@ -1,21 +1,15 @@
 import { useState, useEffect } from 'react'
-import { ExternalLink, Eye, EyeOff } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSettings, useUpdateSettings } from '@/hooks/useSettings'
 import { MainPanel } from '@/components/layout/MainPanel'
 
 export function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth()
-  const { data: settings } = useSettings()
-  const updateSettings = useUpdateSettings()
 
   const [displayName, setDisplayName] = useState('')
-  const [apiKey, setApiKey] = useState('')
-  const [showKey, setShowKey] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
-  const [savingKey, setSavingKey] = useState(false)
 
   useEffect(() => {
     if (profile?.display_name) {
@@ -23,14 +17,7 @@ export function SettingsPage() {
     }
   }, [profile])
 
-  useEffect(() => {
-    if (settings?.anthropic_api_key) {
-      setApiKey(settings.anthropic_api_key)
-    }
-  }, [settings])
-
   const avatarUrl = profile?.avatar_url ?? user?.user_metadata?.avatar_url
-  const maskedKey = apiKey ? `sk-ant-...${apiKey.slice(-8)}` : ''
 
   async function handleSaveProfile() {
     setSavingProfile(true)
@@ -54,23 +41,6 @@ export function SettingsPage() {
     } finally {
       setSavingProfile(false)
     }
-  }
-
-  function handleSaveApiKey() {
-    setSavingKey(true)
-    updateSettings.mutate(
-      { anthropic_api_key: apiKey || null },
-      {
-        onSuccess: () => {
-          toast.success('API key saved')
-          setSavingKey(false)
-        },
-        onError: () => {
-          toast.error('Failed to save API key')
-          setSavingKey(false)
-        },
-      }
-    )
   }
 
   return (
@@ -123,64 +93,6 @@ export function SettingsPage() {
                 className="px-4 py-2 bg-accent-600 text-white rounded-md hover:bg-accent-700 transition-colors disabled:opacity-50"
               >
                 {savingProfile ? 'Saving...' : 'Save changes'}
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Maestro AI */}
-        <section className="border border-gray-200 rounded-lg bg-white p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Maestro AI</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Anthropic API Key
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Required for the Maestro AI assistant. Get your key from{' '}
-                <a
-                  href="https://console.anthropic.com/settings/keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-accent-600 hover:underline"
-                >
-                  console.anthropic.com
-                </a>
-              </p>
-              <div className="relative">
-                <input
-                  type={showKey ? 'text' : 'password'}
-                  value={apiKey}
-                  onChange={e => setApiKey(e.target.value)}
-                  placeholder="sk-ant-api03-..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {settings?.anthropic_api_key && !showKey && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Current: {maskedKey}
-                </p>
-              )}
-            </div>
-            <div className="bg-teal-50 border border-teal-100 rounded-md p-3">
-              <p className="text-xs text-teal-600">
-                Your API key is stored securely in the database and is only used to communicate with Anthropic's API from your browser.
-              </p>
-            </div>
-            <div>
-              <button
-                onClick={handleSaveApiKey}
-                disabled={savingKey}
-                className="px-4 py-2 bg-accent-600 text-white rounded-md hover:bg-accent-700 transition-colors disabled:opacity-50"
-              >
-                {savingKey ? 'Saving...' : 'Save API key'}
               </button>
             </div>
           </div>

@@ -28,8 +28,8 @@ const features = [
   },
   {
     icon: SparklesIcon,
-    title: 'Maestro AI',
-    description: 'An AI assistant that understands your tasks and helps you prioritize what matters.',
+    title: 'Works with Your AI',
+    description: 'Connect Claude or any MCP-capable assistant to review, plan, and manage your tasks.',
     color: 'accent' as const,
   },
   {

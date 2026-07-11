@@ -1,5 +1,7 @@
 # Intend — Product Specification
 
+> **Note (2026-07):** this is the original build spec. The "MVP Scope" checkboxes at the bottom were never ticked but nearly all of it has shipped — `ROADMAP.md` is the live source of truth for what's done and what's next. The Phase 3 AI approach is superseded by `../../docs/future-phases.md`.
+
 ## Vision
 
 A Todoist-like task manager with first-class support for AI-assisted planning. Built for personal use but designed for multiple users and project sharing from day one. The core insight: tasks need *context* (not just titles) so an AI can meaningfully review, prioritize, and schedule them.

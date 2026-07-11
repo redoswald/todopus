@@ -1,5 +1,7 @@
 # Maestro - AI Assistant for Intend
 
+> **⚠️ Superseded (2026-07):** the embedded-chat direction described here was reversed — see `../../docs/future-phases.md` Phase 1 (AI handoff via MCP; the Maestro chat drawer is to be stripped). Kept for historical reference.
+
 ## Overview
 
 Maestro is a conversational AI assistant that helps users manage their tasks and projects in Intend. It lives in a slide-over drawer and has full access to the user's task database, enabling both analysis (like portfolio reviews) and direct actions (like creating or completing tasks).

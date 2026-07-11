@@ -65,14 +65,17 @@
 
 ### Tier 4 — Task Enhancements
 
-- [ ] Due time display (data imported, needs UI)
+- [ ] Due time display (time can now be *set* in TaskEditor — shipped Jul 2026 alongside Attend; list views still don't show it)
+- [ ] Task photo/image attachments
 - [ ] `blocked_by` dependencies — visual indicator, prevent completing blocked tasks
 - [ ] Subtasks rendering (data imported, needs UI)
 - [x] ~~Recurring tasks completion logic (creates next instance)~~ — Done. RecurrenceBuilder UI, auto-spawns next occurrence on completion, recurrence indicator on tasks
 - [ ] Due date quick-set buttons — "Today," "Tomorrow," "Next week" instead of raw date picker
-- [ ] Natural language date parsing ("tomorrow", "next monday")
+- [ ] Natural language date parsing ("tomorrow", "next monday") — i.e. adopt Todoist-style smart date/time recognition in quick-add
 
 ### Tier 5 — Project Features
+
+- [ ] Portfolio board — compare/look across multiple projects at once, kanban-style: columns per project (or per section), cards are tasks, with cross-project filters. Origin: wanting a "spec across the entire suite" view (Jul 2026)
 
 - [x] ~~Archive/unarchive projects~~ — Done. Context menu + Archive view + undo toast
 - [ ] Project progress indicator — "12 of 30 tasks complete" or progress bar
@@ -84,7 +87,10 @@
 
 - [x] ~~Unified account settings shared with Tend~~ — Done. /settings page with shared Supabase profile
 - [x] ~~App switcher dropdown~~ — Done. Wired up in sidebar Zone 1 + Apps card on settings
-- [ ] Supabase Edge Functions for secure AI proxy (key never in browser)
+- [ ] ~~Supabase Edge Functions for secure AI proxy (key never in browser)~~ — Dropped. Superseded by the Maestro teardown (see `../../docs/future-phases.md` Phase 1); no embedded AI means no key to proxy
+- [x] ~~Maestro teardown — remove chat drawer, BYOK settings, `anthropic_api_key` column, browser-side Anthropic SDK (`dangerouslyAllowBrowser`)~~ — Done (Jul 2026). Code deleted, SDK uninstalled; migration 014 drops the chat tables (needs applying to prod)
+- [ ] AI handoff buttons — contextual "Plan this in Claude"-style deep links (`claude://claude.ai/new?q=…`) with prompts that reference the Intend MCP connector; plus a one-time "Connect Intend to your AI" onboarding page. Replaces Maestro per `../../docs/future-phases.md` Phase 1
+- [ ] Vite → Next.js migration — backlogged; sequenced *after* Tiers 3–4, or immediately if a feature needs server code. See `../../docs/future-phases.md` (Phase 2 + Sequencing) for rationale and the trigger rule
 - [ ] Real-time sync (Supabase subscriptions)
 - [ ] Data export (JSON/CSV)
 - [ ] Dark mode
@@ -93,9 +99,11 @@
 
 ## Known Issues
 
+- Task editor sometimes doesn't dismiss after saving — the task "sticks around" until refresh
+- Task reminder popups/toasts aren't clickable — should open the task for editing
 - MainPanel header doesn't update when project name is edited inline (need refresh)
 - No error boundaries for graceful failure handling
-- Maestro context awareness — should scope to current project/view when opened
+- ~~Maestro context awareness — should scope to current project/view when opened~~ — Moot: Maestro is being torn down (see `../../docs/future-phases.md` Phase 1); context-scoping moves to the handoff prompt templates instead
 
 ---
 

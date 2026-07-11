@@ -8,7 +8,6 @@ import {
   Archive,
   Plus,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -48,7 +47,6 @@ interface SidebarProps {
     onDoubleClick: () => void
     onTouchStart: (e: React.TouchEvent) => void
   }
-  onOpenMaestro: () => void
 }
 
 export function Sidebar({
@@ -58,7 +56,6 @@ export function Sidebar({
   isCollapsed,
   isDragging,
   dragHandleProps,
-  onOpenMaestro,
 }: SidebarProps) {
   const { user, profile, signOut } = useAuth()
   const { data: projects = [], isLoading: projectsLoading } = useProjects()
@@ -305,17 +302,6 @@ export function Sidebar({
                 <NavItem to="/upcoming" icon={<CalendarDays className="w-[18px] h-[18px]" />} label="Upcoming" onClick={onClose} />
                 <NavItem to="/completed" icon={<CircleCheck className="w-[18px] h-[18px]" />} label="Completed" onClick={onClose} />
                 <NavItem to="/archived" icon={<Archive className="w-[18px] h-[18px]" />} label="Archive" onClick={onClose} />
-              </div>
-
-              {/* Maestro */}
-              <div className="mt-3">
-                <button
-                  onClick={onOpenMaestro}
-                  className="flex items-center gap-3 w-full px-3 py-2 text-accent-600 hover:bg-accent-50 rounded-md transition-colors"
-                >
-                  <Sparkles className="w-[18px] h-[18px]" />
-                  <span className="font-medium">Maestro</span>
-                </button>
               </div>
 
               {/* Projects */}

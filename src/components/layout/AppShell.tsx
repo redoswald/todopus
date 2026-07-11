@@ -1,18 +1,15 @@
 import { useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import { Sidebar } from './Sidebar'
-import { MaestroDrawer } from '../maestro/MaestroDrawer'
 import { CommandPalette, useCommandPalette } from './CommandPalette'
 import { useSidebarResize } from '@/hooks/useSidebarResize'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [maestroOpen, setMaestroOpen] = useState(false)
   const commandPalette = useCommandPalette()
   const sidebar = useSidebarResize()
-  const navigate = useNavigate()
   useRealtimeSync()
 
   return (
@@ -24,10 +21,6 @@ export function AppShell() {
         isCollapsed={sidebar.isCollapsed}
         isDragging={sidebar.isDragging}
         dragHandleProps={sidebar.dragHandleProps}
-        onOpenMaestro={() => {
-          setSidebarOpen(false)
-          setMaestroOpen(true)
-        }}
       />
 
       {/* Main content area - scrolls independently */}
@@ -54,24 +47,10 @@ export function AppShell() {
         </div>
       </div>
 
-      {/* Maestro AI Drawer */}
-      <MaestroDrawer
-        isOpen={maestroOpen}
-        onClose={() => setMaestroOpen(false)}
-        onOpenSettings={() => {
-          setMaestroOpen(false)
-          navigate('/settings')
-        }}
-      />
-
       {/* Command Palette */}
       <CommandPalette
         isOpen={commandPalette.isOpen}
         onClose={commandPalette.close}
-        onOpenMaestro={() => {
-          commandPalette.close()
-          setMaestroOpen(true)
-        }}
       />
     </div>
   )
