@@ -46,8 +46,8 @@ export function ConnectPage() {
         <div className="space-y-6">
           <Step n={1} title="Have an Intend account">
             <p>
-              Sign in to Intend with Google — that same account is what you'll
-              approve access with.{' '}
+              Sign in to Intend — with Google or email — and that same account
+              is what you'll approve access with.{' '}
               {user ? (
                 <span className="text-accent-600 font-medium">
                   You're signed in and ready. ✓
@@ -83,8 +83,8 @@ export function ConnectPage() {
 
           <Step n={3} title="Approve access">
             <p>
-              Your AI will open an Intend authorization page. Sign in with your
-              Google account and click <span className="font-medium">Approve</span>.
+              Your AI will open an Intend authorization page. Sign in with the
+              same account and click <span className="font-medium">Approve</span>.
               That's it — your assistant only ever sees <em>your</em> tasks, and
               you can revoke access from your AI's connector settings anytime.
             </p>
