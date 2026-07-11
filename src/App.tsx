@@ -3,6 +3,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard'
 import { LoginPage } from '@/components/auth/LoginPage'
 import { SignupPage } from '@/components/auth/SignupPage'
 import { LandingPage } from '@/components/LandingPage'
+import { ConnectPage } from '@/components/ConnectPage'
 import { AppShell } from '@/components/layout/AppShell'
 import { InboxView } from '@/components/views/InboxView'
 import { TodayView } from '@/components/views/TodayView'
@@ -24,6 +25,7 @@ export default function App() {
         <Route index element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/connect" element={<ConnectPage />} />
 
         {/* Protected routes */}
         <Route

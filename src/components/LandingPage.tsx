@@ -31,6 +31,7 @@ const features = [
     title: 'Works with Your AI',
     description: 'Connect Claude or any MCP-capable assistant to review, plan, and manage your tasks.',
     color: 'accent' as const,
+    href: '/connect',
   },
   {
     icon: CommandIcon,
@@ -124,32 +125,38 @@ export function LandingPage() {
               Everything you need, nothing you don't
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature) => (
-                <div
-                  key={feature.title}
-                  className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-accent-200 hover:-translate-y-1 transition-all duration-200 bg-white p-6"
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`p-3 rounded-xl ${
-                        feature.color === 'accent'
-                          ? 'bg-accent-50 text-accent-500'
-                          : 'bg-teal-50 text-teal-500'
-                      }`}
-                    >
-                      <feature.icon />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {feature.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {feature.description}
-                      </p>
+              {features.map((feature) => {
+                const card = (
+                  <div className="h-full border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-accent-200 hover:-translate-y-1 transition-all duration-200 bg-white p-6">
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`p-3 rounded-xl ${
+                          feature.color === 'accent'
+                            ? 'bg-accent-50 text-accent-500'
+                            : 'bg-teal-50 text-teal-500'
+                        }`}
+                      >
+                        <feature.icon />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          {feature.title}
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                          {feature.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+                return 'href' in feature && feature.href ? (
+                  <Link key={feature.title} to={feature.href}>
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={feature.title}>{card}</div>
+                )
+              })}
             </div>
           </div>
         </section>

@@ -89,7 +89,8 @@
 - [x] ~~App switcher dropdown~~ — Done. Wired up in sidebar Zone 1 + Apps card on settings
 - [ ] ~~Supabase Edge Functions for secure AI proxy (key never in browser)~~ — Dropped. Superseded by the Maestro teardown (see `../../docs/future-phases.md` Phase 1); no embedded AI means no key to proxy
 - [x] ~~Maestro teardown — remove chat drawer, BYOK settings, `anthropic_api_key` column, browser-side Anthropic SDK (`dangerouslyAllowBrowser`)~~ — Done (Jul 2026). Code deleted, SDK uninstalled; migration 014 drops the chat tables (needs applying to prod)
-- [ ] AI handoff buttons — contextual "Plan this in Claude"-style deep links (`claude://claude.ai/new?q=…`) with prompts that reference the Intend MCP connector; plus a one-time "Connect Intend to your AI" onboarding page. Replaces Maestro per `../../docs/future-phases.md` Phase 1
+- [x] ~~"Connect Intend to your AI" onboarding page~~ — Done (Jul 2026). Public `/connect` route with connector URL + per-client steps; linked from Settings AI card and the landing feature card. Backed by intend-mcp's multi-user OAuth (Supabase JWT + RLS) and MCP prompts, shipped same day
+- [ ] AI handoff buttons — contextual "Plan this in Claude"-style deep links with prompts that reference the Intend MCP connector (web `claude.ai/new?q=` was removed Oct 2025 → use copy-prompt-to-clipboard + open, with `claude://` desktop deep link as enhancement). Remaining piece of `../../docs/future-phases.md` Phase 1
 - [ ] Vite → Next.js migration — backlogged; sequenced *after* Tiers 3–4, or immediately if a feature needs server code. See `../../docs/future-phases.md` (Phase 2 + Sequencing) for rationale and the trigger rule
 - [ ] Real-time sync (Supabase subscriptions)
 - [ ] Data export (JSON/CSV)

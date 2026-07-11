@@ -4,6 +4,9 @@ All notable changes to Intend will be documented in this file.
 
 ## [Unreleased]
 
+### Added (MCP-first pivot)
+- Public `/connect` page — "Connect Intend to your AI" onboarding with the MCP connector URL (copy button), per-client setup steps, and example asks. Linked from a new Settings "AI" card and the landing page's "Works with Your AI" feature card. Works for any Intend user now that intend-mcp is multi-user (OAuth via Supabase sessions + RLS).
+
 ### Removed (Maestro teardown — MCP-first pivot)
 - Maestro AI chat: drawer, sidebar entry, command-palette action, and landing-page copy. AI access is now MCP-first — users connect their own assistant via the Intend MCP server; contextual AI handoff links are planned as the replacement (see `../../docs/future-phases.md` Phase 1).
 - BYOK settings: "Maestro AI" card on the settings page and the `anthropic_api_key` storage behind it (`useSettings` hook deleted).
