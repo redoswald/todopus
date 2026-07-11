@@ -68,7 +68,7 @@
 - [ ] Due time display (time can now be *set* in TaskEditor — shipped Jul 2026 alongside Attend; list views still don't show it)
 - [ ] Task photo/image attachments
 - [ ] `blocked_by` dependencies — visual indicator, prevent completing blocked tasks
-- [ ] Subtasks rendering (data imported, needs UI)
+- [x] ~~Subtasks rendering (data imported, needs UI)~~ — Done. TaskItem renders expandable nested subtask trees with open/total counts
 - [x] ~~Recurring tasks completion logic (creates next instance)~~ — Done. RecurrenceBuilder UI, auto-spawns next occurrence on completion, recurrence indicator on tasks
 - [ ] Due date quick-set buttons — "Today," "Tomorrow," "Next week" instead of raw date picker
 - [ ] Natural language date parsing ("tomorrow", "next monday") — i.e. adopt Todoist-style smart date/time recognition in quick-add
