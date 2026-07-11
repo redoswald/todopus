@@ -342,11 +342,48 @@ export function useCompleteTask() {
   })
 }
 
+// Reopen a completed task. If it recurs, also retract the open successor its
+// completion spawned — otherwise the chain ends up with two open instances
+// (e.g. un-completing from the Completed view long after the fact).
 export function useUncompleteTask() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: task, error: fetchErr } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('id', id)
+        .single()
+      if (fetchErr) throw fetchErr
+
+      if (task.recurrence_rule && task.completed_at) {
+        // The spawned successor: same chain (title + project + recurring),
+        // still open, created at/after this task's completion.
+        let successorQuery = supabase
+          .from('tasks')
+          .select('id')
+          .neq('id', id)
+          .eq('title', task.title)
+          .eq('status', 'open')
+          .is('deleted_at', null)
+          .not('recurrence_rule', 'is', null)
+          .gte('created_at', task.completed_at)
+        successorQuery = task.project_id
+          ? successorQuery.eq('project_id', task.project_id)
+          : successorQuery.is('project_id', null)
+        const { data: successors, error: succErr } = await successorQuery
+        if (succErr) throw succErr
+
+        if (successors && successors.length > 0) {
+          const { error: retractErr } = await supabase
+            .from('tasks')
+            .update({ deleted_at: new Date().toISOString() })
+            .in('id', successors.map(s => s.id))
+          if (retractErr) throw retractErr
+        }
+      }
+
       const { error } = await supabase
         .from('tasks')
         .update({

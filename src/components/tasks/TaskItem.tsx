@@ -94,12 +94,8 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
             duration: 5000,
             action: {
               label: 'Undo',
-              onClick: () => {
-                uncompleteTask.mutate(task.id)
-                if (result.nextTask) {
-                  deleteTask.mutate(result.nextTask.id)
-                }
-              },
+              // useUncompleteTask also retracts the spawned next occurrence
+              onClick: () => uncompleteTask.mutate(task.id),
             },
           })
         },
