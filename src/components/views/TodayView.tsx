@@ -7,12 +7,14 @@ import { TaskEditor } from '@/components/tasks/TaskEditor'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { TaskListSkeleton } from '@/components/shared/skeletons'
 import { useTasks } from '@/hooks/useTasks'
+import { useAddTaskParam } from '@/hooks/useAddTaskParam'
 import type { Task } from '@/types'
 
 export function TodayView() {
   const { data: tasks = [], isLoading } = useTasks({ today: true })
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [showAddTask, setShowAddTask] = useState(false)
+  useAddTaskParam(() => setShowAddTask(true))
   const todayStr = new Date().toISOString().split('T')[0]
 
   const { overdue, today } = useMemo(() => {

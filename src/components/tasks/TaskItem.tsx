@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { format, isToday, isPast, parseISO } from 'date-fns'
 import Markdown from 'react-markdown'
 import { toast } from 'sonner'
 import { useCompleteTask, useUncompleteTask, useDeleteTask, useRestoreTask } from '@/hooks/useTasks'
+import { useTaskSelection, isEditableTarget } from '@/contexts/KeyboardShortcutsContext'
 import { TaskEditor } from './TaskEditor'
 import { describeRecurrence } from '@/lib/recurrenceHelper'
 import type { Task } from '@/types'
@@ -65,6 +66,16 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
   // actually completing (and leaving the list)
   const [isCompleting, setIsCompleting] = useState(false)
 
+  const rowRef = useRef<HTMLDivElement>(null)
+  const { selectedTaskId, helpOverlayOpen } = useTaskSelection()
+  const isSelected = selectedTaskId === task.id
+
+  useEffect(() => {
+    if (isSelected) {
+      rowRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [isSelected])
+
   const isCompleted = task.status === 'done'
   const hasDependencies = task.dependencies && task.dependencies.length > 0
   const dueDate = task.due_date ? parseISO(task.due_date) : null
@@ -76,6 +87,10 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
 
   function handleToggleComplete(e: React.MouseEvent) {
     e.stopPropagation()
+    toggleComplete()
+  }
+
+  function toggleComplete() {
     if (isCompleted) {
       uncompleteTask.mutate(task.id)
       return
@@ -102,6 +117,24 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
       })
     }, 600)
   }
+
+  // Shortcuts that act on the selected task; only the selected row listens
+  useEffect(() => {
+    if (!isSelected || helpOverlayOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (isEditableTarget(e.target)) return
+      if (e.key === 'c') {
+        e.preventDefault()
+        toggleComplete()
+      } else if (e.key === 'e' || e.key === 'Enter') {
+        e.preventDefault()
+        onClick?.()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  })
 
   function handleDragStart(e: React.DragEvent) {
     e.dataTransfer.setData('application/intend-task', JSON.stringify({
@@ -139,6 +172,8 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
   return (
     <div>
       <div
+        ref={rowRef}
+        data-task-id={task.id}
         onClick={onClick}
         draggable={draggable}
         onDragStart={onDragStartProp || handleDragStart}
@@ -148,7 +183,8 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
           onClick && 'cursor-pointer hover:bg-gray-50',
           draggable && 'cursor-grab active:cursor-grabbing',
           depth > 0 && 'border-l-2 border-gray-200 ml-3',
-          isCompleting && 'opacity-60 transition-opacity duration-500'
+          isCompleting && 'opacity-60 transition-opacity duration-500',
+          isSelected && 'bg-accent-50 ring-1 ring-inset ring-accent-300'
         )}
       >
       {/* Checkbox */}

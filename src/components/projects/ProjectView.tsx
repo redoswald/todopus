@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Sparkles } from 'lucide-react'
 import { MainPanel } from '@/components/layout/MainPanel'
@@ -11,6 +11,7 @@ import { ProjectHeaderSkeleton, TaskListSkeleton } from '@/components/shared/ske
 import { ProjectHeader } from './ProjectHeader'
 import { useProject, useProjects, usePlacements, useUpdateProject, useDeleteProject, useArchiveProject, useReorderProject, getDescendantIds } from '@/hooks/useProjects'
 import { useTasks } from '@/hooks/useTasks'
+import { useAddTaskParam } from '@/hooks/useAddTaskParam'
 import { useSections, useDeleteSection, Section } from '@/hooks/useSections'
 import { PROJECT_COLORS } from '@/lib/constants'
 import { ShareSection } from './ShareSection'
@@ -23,7 +24,6 @@ export function ProjectView() {
   const { data: unsectionedTasks = [], isLoading: tasksLoading } = useTasks({ projectId, noSection: true })
 
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
   const { data: allProjects = [] } = useProjects()
   const { data: placements } = usePlacements()
   const updateProject = useUpdateProject()
@@ -53,12 +53,7 @@ export function ProjectView() {
       .map(p => ({ id: p.id, name: p.name, color: p.color }))
   }, [allProjects, placements, projectId])
 
-  useEffect(() => {
-    if (searchParams.get('add') === 'true') {
-      setAddingTaskToSection('none')
-      setSearchParams({}, { replace: true })
-    }
-  }, [searchParams, setSearchParams])
+  useAddTaskParam(() => setAddingTaskToSection('none'))
 
   useEffect(() => {
     setDangerVisible(false)

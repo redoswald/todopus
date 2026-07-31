@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
 import { Inbox } from 'lucide-react'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { TaskList } from '@/components/tasks/TaskList'
@@ -7,20 +6,14 @@ import { TaskEditor } from '@/components/tasks/TaskEditor'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { TaskListSkeleton } from '@/components/shared/skeletons'
 import { useTasks } from '@/hooks/useTasks'
+import { useAddTaskParam } from '@/hooks/useAddTaskParam'
 import type { Task } from '@/types'
 
 export function InboxView() {
   const { data: tasks = [], isLoading } = useTasks({ inbox: true })
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [showAddTask, setShowAddTask] = useState(false)
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  useEffect(() => {
-    if (searchParams.get('add') === 'true') {
-      setShowAddTask(true)
-      setSearchParams({}, { replace: true })
-    }
-  }, [searchParams, setSearchParams])
+  useAddTaskParam(() => setShowAddTask(true))
 
   return (
     <MainPanel title="Inbox">
