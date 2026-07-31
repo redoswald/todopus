@@ -750,39 +750,7 @@ Produce an ordered list with brief reasoning.
 
 ## MVP Scope
 
-### Phase 1: Core Task Management
-- [ ] Supabase project setup + schema migration
-- [ ] Auth UI (signup, login — using Supabase Auth)
-- [ ] Project CRUD with hierarchy
-- [ ] Section CRUD
-- [ ] Task CRUD with subtasks
-- [ ] Inbox / Today / Upcoming views
-- [ ] Sidebar with project tree
-- [ ] Task completion (non-recurring)
-
-### Phase 2: Rich Features
-- [ ] Task descriptions (Markdown)
-- [ ] Project descriptions (Markdown)
-- [ ] Recurrence rules + completion-creates-next
-- [ ] Task dependencies (`blocked_by`)
-- [ ] Due date picker + priority selector
-- [ ] Dependency visualization
-- [ ] Project sharing (invite by email, permission levels)
-- [ ] Shared project indicators in sidebar
-
-### Phase 3: AI Integration
-- [ ] Daily planner
-- [ ] Within-project review
-- [ ] Portfolio review
-- [ ] AI-suggested tasks
-
-### Phase 4: Polish
-- [ ] Keyboard shortcuts (q=quick add, etc.)
-- [ ] Drag-and-drop reordering
-- [ ] Search across all tasks
-- [ ] Import from Todoist (API or CSV)
-- [ ] Pending share invites (for emails not yet signed up)
-- [ ] Dark mode
+Shipped (see CHANGELOG). Current work: see [GitHub Issues](https://github.com/redoswald/intend-web/issues) and the [Done Intentionally board](https://github.com/users/redoswald/projects/1).
 
 ---
 

@@ -301,35 +301,7 @@ When analyzing, consider:
 
 ## Implementation Plan
 
-### Phase 1: Foundation
-1. [ ] Create database migration for `conversations` and `messages` tables
-2. [ ] Add `anthropic_api_key` to user settings
-3. [ ] Build settings UI for API key input
-4. [ ] Create basic slide-over drawer component
-
-### Phase 2: Chat Core
-5. [ ] Implement Anthropic SDK integration (browser-side)
-6. [ ] Build chat message components (user/assistant bubbles)
-7. [ ] Implement conversation history (load/save to Supabase)
-8. [ ] Add message input with send functionality
-
-### Phase 3: Context & Tools
-9. [ ] Build context fetcher (load all tasks/projects for AI)
-10. [ ] Define tool schemas for read operations
-11. [ ] Define tool schemas for write operations
-12. [ ] Implement tool execution layer
-
-### Phase 4: Action Queue
-13. [ ] Build Action Queue UI component
-14. [ ] Implement action approval flow
-15. [ ] Connect approved actions to existing mutation hooks
-16. [ ] Add success/error feedback
-
-### Phase 5: Polish
-17. [ ] Add loading states and streaming responses
-18. [ ] Implement conversation management (new chat, history)
-19. [ ] Add keyboard shortcuts (Cmd+K to open?)
-20. [ ] Error handling and edge cases
+*Implementation plan removed at migration — Maestro was built, then torn down in the MCP pivot (see CHANGELOG).*
 
 ---
 

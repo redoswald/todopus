@@ -42,3 +42,9 @@ The aaronOS design system has moved to the suite-level docs folder: `../docs/des
 ## Deployment
 
 Vercel auto-deploys on push to `main`. Use `vercel --prod` for direct local deploys.
+
+## Task tracking
+- Specs in docs/ are DESIGN docs — the what/why/constraints. They do not track state.
+- Work items live in GitHub Issues; the cross-suite portfolio view is https://github.com/users/redoswald/projects/1
+- To pick up work: `gh issue view <n>` for full context. Reference issues in PRs with "Fixes #<n>" so state updates on merge.
+- Do not add task checklists back into spec files. Session-scratch todo lists are fine but must not be committed.
