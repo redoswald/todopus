@@ -5,7 +5,7 @@ import { format, isToday, isPast, parseISO } from 'date-fns'
 import Markdown from 'react-markdown'
 import { toast } from 'sonner'
 import { useCompleteTask, useUncompleteTask, useDeleteTask, useRestoreTask } from '@/hooks/useTasks'
-import { useTaskSelection, isEditableTarget } from '@/contexts/KeyboardShortcutsContext'
+import { useShortcuts, isEditableTarget } from '@/contexts/KeyboardShortcutsContext'
 import { TaskEditor } from './TaskEditor'
 import { describeRecurrence } from '@/lib/recurrenceHelper'
 import type { Task } from '@/types'
@@ -67,7 +67,7 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
   const [isCompleting, setIsCompleting] = useState(false)
 
   const rowRef = useRef<HTMLDivElement>(null)
-  const { selectedTaskId, helpOverlayOpen } = useTaskSelection()
+  const { selectedTaskId, helpOverlayOpen } = useShortcuts()
   const isSelected = selectedTaskId === task.id
 
   useEffect(() => {

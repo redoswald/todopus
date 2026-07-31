@@ -12,9 +12,11 @@ const SHORTCUT_GROUPS: { title: string; shortcuts: Shortcut[] }[] = [
   {
     title: 'Navigation',
     shortcuts: [
-      { keys: ['J', '↓'], description: 'Next task' },
-      { keys: ['K', '↑'], description: 'Previous task' },
-      { keys: ['Esc'], description: 'Clear selection' },
+      { keys: ['J', '↓'], description: 'Next item' },
+      { keys: ['K', '↑'], description: 'Previous item' },
+      { keys: ['←', '→'], description: 'Sidebar ↔ task list' },
+      { keys: ['↵'], description: 'Open selected sidebar item' },
+      { keys: ['Esc'], description: 'Back / clear selection' },
     ],
   },
   {
@@ -23,6 +25,7 @@ const SHORTCUT_GROUPS: { title: string; shortcuts: Shortcut[] }[] = [
       { keys: ['Q'], description: 'Quick-add task' },
       { keys: ['C'], description: 'Complete selected task' },
       { keys: ['E', '↵'], description: 'Edit selected task' },
+      { keys: ['Esc'], description: 'Close editor (saves changes)' },
     ],
   },
   {
