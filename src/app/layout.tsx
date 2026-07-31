@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from 'next'
+import { DM_Sans } from 'next/font/google'
 import Script from 'next/script'
 import { Providers } from './providers'
-import '@/index.css'
+import './globals.css'
+
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  weight: ['400', '500', '600', '700'],
+})
 
 export const metadata: Metadata = {
   title: 'Intend',
@@ -17,16 +25,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-app="intend">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font -- DM Sans moves to next/font in the design-system follow-up (Phase 3) */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body>
+      <body className={`${dmSans.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
         <Script
           src="https://umami.aaronos.ai/script.js"

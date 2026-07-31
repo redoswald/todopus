@@ -1,6 +1,6 @@
 # Intend
 
-Todoist-like task manager, MCP-first for AI (bring your own assistant via `../intend-mcp`; no embedded AI). Built with Next.js (App Router), React 19, TypeScript (strict), Tailwind CSS v3, Supabase (Postgres + Auth + RLS via `@supabase/ssr`), and TanStack React Query. Deployed on Vercel.
+Todoist-like task manager, MCP-first for AI (bring your own assistant via `../intend-mcp`; no embedded AI). Built with Next.js (App Router), React 19, TypeScript (strict), Tailwind CSS v4 (CSS-first — design tokens live in src/app/globals.css, no tailwind.config), Supabase (Postgres + Auth + RLS via `@supabase/ssr`), and TanStack React Query. Deployed on Vercel.
 
 ## Commands
 
@@ -25,7 +25,7 @@ Todoist-like task manager, MCP-first for AI (bring your own assistant via `../in
 - Custom hooks wrap TanStack React Query for all data fetching
 - Auth: `src/lib/supabase/` holds the suite client factories; `cookie-options.ts` is a cross-app contract (keep byte-identical with tend/attend/portend-web). Route protection is middleware-based (`src/middleware.ts`)
 - RLS enabled on all public tables
-- Tailwind accent palette: orange
+- Tailwind accent palette: orange; utility shade numbers keep the historical mapping (accent-500 = design-system --accent-300 #F97316)
 - No test framework yet
 
 ## Environment Variables
