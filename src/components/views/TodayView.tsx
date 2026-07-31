@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useMemo } from 'react'
 import { isToday, isPast, parseISO } from 'date-fns'
 import { Sun } from 'lucide-react'

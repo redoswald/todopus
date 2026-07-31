@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom'
+'use client'
+
+import { useRouter } from 'next/navigation'
 import { Settings } from 'lucide-react'
 import {
   DropdownMenu,
@@ -16,7 +18,7 @@ interface AccountMenuProps {
 }
 
 export function AccountMenu({ displayName, email, avatarUrl, onSignOut }: AccountMenuProps) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const initial = displayName?.charAt(0).toUpperCase() ?? '?'
   const name = displayName ?? 'Loading...'
 
@@ -43,7 +45,7 @@ export function AccountMenu({ displayName, email, avatarUrl, onSignOut }: Accoun
                 <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
+            <DropdownMenuItem onClick={() => router.push('/settings')}>
               Account settings
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
@@ -57,7 +59,7 @@ export function AccountMenu({ displayName, email, avatarUrl, onSignOut }: Accoun
         </DropdownMenu>
 
         <button
-          onClick={() => navigate('/settings')}
+          onClick={() => router.push('/settings')}
           className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors flex-shrink-0"
         >
           <Settings className="w-4 h-4" />

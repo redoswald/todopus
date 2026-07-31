@@ -1,5 +1,7 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
+import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
@@ -107,12 +109,12 @@ export function SettingsPage() {
             MCP-capable assistant once, and it can see, plan, and manage your
             tasks with you.
           </p>
-          <RouterLink
-            to="/connect"
+          <Link
+            href="/connect"
             className="inline-flex items-center gap-2 px-4 py-2 bg-accent-600 text-white text-sm rounded-md hover:bg-accent-700 transition-colors"
           >
             Connect your AI
-          </RouterLink>
+          </Link>
         </section>
 
         {/* Security */}

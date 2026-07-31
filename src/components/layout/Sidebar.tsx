@@ -1,5 +1,8 @@
+'use client'
+
 import { useState, useRef, useCallback } from 'react'
-import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   Inbox,
   CalendarCheck,
@@ -63,8 +66,8 @@ export function Sidebar({
   const { data: placements } = usePlacements()
   const { data: inboxCount = 0 } = useInboxCount()
   const { data: todayCount = 0 } = useTodayCount()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const updateTask = useUpdateTask()
   const updateProject = useUpdateProject()
   const deleteProject = useDeleteProject()
@@ -206,8 +209,8 @@ export function Sidebar({
             onClick: () => unarchiveProject.mutate(target.id),
           },
         })
-        if (location.pathname === `/project/${target.id}`) {
-          navigate('/inbox')
+        if (pathname === `/project/${target.id}`) {
+          router.push('/inbox')
         }
       },
     })
@@ -223,8 +226,8 @@ export function Sidebar({
         setShowDeleteModal(false)
         setDeleteTarget(null)
         toast(`Project "${deletedName}" deleted`)
-        if (location.pathname === `/project/${deletedId}`) {
-          navigate('/inbox')
+        if (pathname === `/project/${deletedId}`) {
+          router.push('/inbox')
         }
       },
     })
@@ -232,7 +235,7 @@ export function Sidebar({
 
   async function handleSignOut() {
     await signOut()
-    navigate('/login')
+    router.push('/login')
   }
 
   function handleMoveToInbox(taskId: string) {
@@ -281,11 +284,11 @@ export function Sidebar({
             <div className="p-3">
               <button
                 onClick={() => {
-                  const projectMatch = location.pathname.match(/^\/project\/([^/]+)/)
+                  const projectMatch = pathname.match(/^\/project\/([^/]+)/)
                   if (projectMatch) {
-                    navigate(`/project/${projectMatch[1]}?add=true`)
+                    router.push(`/project/${projectMatch[1]}?add=true`)
                   } else {
-                    navigate('/inbox?add=true')
+                    router.push('/inbox?add=true')
                   }
                   onClose()
                 }}
@@ -356,7 +359,7 @@ export function Sidebar({
           onClose={() => setContextMenu(null)}
           onShare={() => {
             if (deleteTarget) {
-              navigate(`/project/${deleteTarget.id}`)
+              router.push(`/project/${deleteTarget.id}`)
               setTimeout(() => document.getElementById('sharing')?.scrollIntoView({ behavior: 'smooth' }), 100)
             }
             setContextMenu(null)
@@ -412,6 +415,8 @@ interface NavItemProps {
 
 function NavItem({ to, icon, label, count, onClick, onTaskDrop }: NavItemProps) {
   const [isDragOver, setIsDragOver] = useState(false)
+  const pathname = usePathname()
+  const isActive = pathname === to
   const { selectedNavPath } = useShortcuts()
   const isKeyboardSelected = selectedNavPath === to
 
@@ -439,30 +444,28 @@ function NavItem({ to, icon, label, count, onClick, onTaskDrop }: NavItemProps) 
   }
 
   return (
-    <NavLink
-      to={to}
+    <Link
+      href={to}
       data-nav-path={to}
       onClick={onClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={({ isActive }) =>
-        cn(
-          'flex items-center gap-3 px-3 py-2 rounded-md transition-colors',
-          isActive
-            ? 'bg-accent-50 text-accent-600'
-            : 'text-gray-700 hover:bg-gray-200',
-          isDragOver && 'ring-2 ring-accent-500 bg-accent-50',
-          isKeyboardSelected && 'bg-accent-50 ring-1 ring-inset ring-accent-300'
-        )
-      }
+      className={cn(
+        'flex items-center gap-3 px-3 py-2 rounded-md transition-colors',
+        isActive
+          ? 'bg-accent-50 text-accent-600'
+          : 'text-gray-700 hover:bg-gray-200',
+        isDragOver && 'ring-2 ring-accent-500 bg-accent-50',
+        isKeyboardSelected && 'bg-accent-50 ring-1 ring-inset ring-accent-300'
+      )}
     >
       <span className="w-5 h-5 flex items-center justify-center">{icon}</span>
       <span className="flex-1">{label}</span>
       {count !== undefined && count > 0 && (
         <span className="text-xs text-gray-500">{count}</span>
       )}
-    </NavLink>
+    </Link>
   )
 }
 
@@ -489,6 +492,8 @@ function ProjectItem({ project, depth, onClick, onTaskDrop, onProjectDrop, onCon
   const [renameValue, setRenameValue] = useState(project.name)
   const hasChildren = project.children && project.children.length > 0
   const rowRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+  const isActive = pathname === `/project/${project.id}`
   const { selectedNavPath } = useShortcuts()
   const isKeyboardSelected = selectedNavPath === `/project/${project.id}`
 
@@ -656,8 +661,8 @@ function ProjectItem({ project, depth, onClick, onTaskDrop, onProjectDrop, onCon
             />
           </div>
         ) : (
-          <NavLink
-            to={`/project/${project.id}`}
+          <Link
+            href={`/project/${project.id}`}
             data-nav-path={`/project/${project.id}`}
             onClick={onClick}
             draggable
@@ -669,19 +674,17 @@ function ProjectItem({ project, depth, onClick, onTaskDrop, onProjectDrop, onCon
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={({ isActive }) =>
-              cn(
-                'flex-1 flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors',
-                isActive
-                  ? 'bg-accent-50 text-accent-600'
-                  : 'text-gray-700 hover:bg-gray-200',
-                !hasChildren && 'ml-5',
-                isTaskDragOver && 'ring-2 ring-accent-500 bg-accent-50',
-                indicator && indicator.zone === 'nest' && !isSelf && 'ring-2 ring-accent-500 bg-accent-50',
-                isSelf && 'opacity-40',
-                isKeyboardSelected && 'bg-accent-50 ring-1 ring-inset ring-accent-300'
-              )
-            }
+            className={cn(
+              'flex-1 flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors',
+              isActive
+                ? 'bg-accent-50 text-accent-600'
+                : 'text-gray-700 hover:bg-gray-200',
+              !hasChildren && 'ml-5',
+              isTaskDragOver && 'ring-2 ring-accent-500 bg-accent-50',
+              indicator && indicator.zone === 'nest' && !isSelf && 'ring-2 ring-accent-500 bg-accent-50',
+              isSelf && 'opacity-40',
+              isKeyboardSelected && 'bg-accent-50 ring-1 ring-inset ring-accent-300'
+            )}
           >
             <span
               className="w-2 h-2 rounded-full"
@@ -693,7 +696,7 @@ function ProjectItem({ project, depth, onClick, onTaskDrop, onProjectDrop, onCon
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             )}
-          </NavLink>
+          </Link>
         )}
       </div>
       {/* Below insertion line */}
@@ -766,13 +769,13 @@ function ProjectsHeader({ onClose, onProjectDrop }: { onClose: () => void; onPro
       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
         Projects
       </span>
-      <NavLink
-        to="/projects/new"
+      <Link
+        href="/projects/new"
         className="text-gray-400 hover:text-gray-600"
         onClick={onClose}
       >
         <Plus className="w-4 h-4" />
-      </NavLink>
+      </Link>
     </div>
   )
 }

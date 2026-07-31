@@ -1,6 +1,8 @@
+'use client'
+
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useRouter, usePathname } from 'next/navigation'
 import { ShortcutsHelpOverlay } from '@/components/shared/ShortcutsHelpOverlay'
 
 interface KeyboardShortcutsContextValue {
@@ -59,14 +61,14 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
   // Non-null while the sidebar "column" has the keyboard selection
   const [selectedNavPath, setSelectedNavPath] = useState<string | null>(null)
   const [helpOverlayOpen, setHelpOverlayOpen] = useState(false)
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
 
   // Selection is per-view; drop it when the route changes
   useEffect(() => {
     setSelectedTaskId(null)
     setSelectedNavPath(null)
-  }, [location.pathname])
+  }, [pathname])
 
   const moveTaskSelection = useCallback((direction: 1 | -1): boolean => {
     const ids = getVisibleTaskIds()
@@ -128,7 +130,7 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
           if (items.length === 0) break
           e.preventDefault()
           setSelectedTaskId(null)
-          const current = items.find(el => el.dataset.navPath === location.pathname) ?? items[0]
+          const current = items.find(el => el.dataset.navPath === pathname) ?? items[0]
           setSelectedNavPath(current.dataset.navPath!)
           current.scrollIntoView({ block: 'nearest' })
           break
@@ -142,13 +144,13 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
         case 'Enter':
           if (inSidebar) {
             e.preventDefault()
-            navigate(selectedNavPath)
+            router.push(selectedNavPath)
           }
           break
         case 'q': {
           e.preventDefault()
-          const isAddCapable = ADD_CAPABLE_PATHS.some(re => re.test(location.pathname))
-          navigate(isAddCapable ? `${location.pathname}?add=true` : '/inbox?add=true')
+          const isAddCapable = ADD_CAPABLE_PATHS.some(re => re.test(pathname))
+          router.push(isAddCapable ? `${pathname}?add=true` : '/inbox?add=true')
           break
         }
         case 'Escape':
@@ -159,7 +161,7 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [helpOverlayOpen, selectedNavPath, location.pathname, moveTaskSelection, moveNavSelection, navigate])
+  }, [helpOverlayOpen, selectedNavPath, pathname, moveTaskSelection, moveNavSelection, router])
 
   return (
     <KeyboardShortcutsContext.Provider value={{ selectedTaskId, setSelectedTaskId, selectedNavPath, helpOverlayOpen }}>

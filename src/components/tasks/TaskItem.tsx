@@ -1,5 +1,7 @@
+'use client'
+
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { format, isToday, isPast, parseISO } from 'date-fns'
 import Markdown from 'react-markdown'
@@ -26,6 +28,8 @@ interface TaskItemProps {
 const EXPANDED_STORAGE_KEY = 'intend-subtasks-expanded'
 
 function getExpandedState(taskId: string): boolean | null {
+  // Guarded for Next.js prerender — localStorage only exists in the browser
+  if (typeof window === 'undefined') return null
   try {
     const stored = localStorage.getItem(EXPANDED_STORAGE_KEY)
     if (stored) {
@@ -50,7 +54,7 @@ function setExpandedState(taskId: string, expanded: boolean) {
 }
 
 export function TaskItem({ task, showProject = false, onClick, onTaskClick, editingTask, onEditClose, draggable = true, onDragStart: onDragStartProp, depth = 0, defaultExpanded = false }: TaskItemProps) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const completeTask = useCompleteTask()
   const uncompleteTask = useUncompleteTask()
   const deleteTask = useDeleteTask()
@@ -266,7 +270,7 @@ export function TaskItem({ task, showProject = false, onClick, onTaskClick, edit
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                navigate(`/project/${task.project_id}`)
+                router.push(`/project/${task.project_id}`)
               }}
               className="text-xs text-gray-500 hover:text-gray-700 hover:underline flex items-center gap-1"
             >

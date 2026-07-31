@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -24,12 +26,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session (this also parses OAuth hash fragments like #access_token=...)
+    // Get initial session (OAuth lands via the PKCE /auth/callback route,
+    // so there is no hash fragment to clean up)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      // Clean up OAuth hash fragment from URL after Supabase has parsed it
-      if (window.location.hash.includes('access_token')) {
-        window.history.replaceState(null, '', window.location.pathname)
-      }
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false) // Set loading false immediately
@@ -85,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signInWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
     })
     return { error: error as Error | null }
   }

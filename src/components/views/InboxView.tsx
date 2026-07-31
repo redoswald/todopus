@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { Inbox } from 'lucide-react'
 import { MainPanel } from '@/components/layout/MainPanel'

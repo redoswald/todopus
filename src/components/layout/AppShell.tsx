@@ -1,5 +1,6 @@
+'use client'
+
 import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { CommandPalette, useCommandPalette } from './CommandPalette'
@@ -7,7 +8,7 @@ import { useSidebarResize } from '@/hooks/useSidebarResize'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { KeyboardShortcutsProvider } from '@/contexts/KeyboardShortcutsContext'
 
-export function AppShell() {
+export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const commandPalette = useCommandPalette()
   const sidebar = useSidebarResize()
@@ -45,7 +46,7 @@ export function AppShell() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <Outlet />
+          {children}
         </div>
       </div>
 

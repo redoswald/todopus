@@ -1,5 +1,8 @@
+'use client'
+
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
 export function SignupPage() {
@@ -9,7 +12,7 @@ export function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const { signUp, signInWithGoogle } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -23,7 +26,7 @@ export function SignupPage() {
       setLoading(false)
     } else {
       // Supabase may require email confirmation depending on settings
-      navigate('/')
+      router.push('/')
     }
   }
 
@@ -133,7 +136,7 @@ export function SignupPage() {
 
           <p className="text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link to="/login" className="text-accent-600 hover:text-accent-500 font-medium">
+            <Link href="/login" className="text-accent-600 hover:text-accent-500 font-medium">
               Sign in
             </Link>
           </p>

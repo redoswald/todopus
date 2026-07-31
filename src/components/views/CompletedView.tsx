@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { format, parseISO, isToday, isYesterday, isThisWeek, isThisYear } from 'date-fns'
 import { CheckCheck } from 'lucide-react'
