@@ -1,5 +1,7 @@
+'use client'
+
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import {
   Search,
   Inbox,
@@ -59,7 +61,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data: projects = [] } = useProjects()
   const { data: searchedTasks = [] } = useSearchTasks(debouncedQuery)
 
@@ -174,7 +176,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     if (item.action) {
       item.action()
     } else if (item.path) {
-      navigate(item.path)
+      router.push(item.path)
       onClose()
     }
   }

@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import Markdown from 'react-markdown'
 import { useUpdateProject } from '@/hooks/useProjects'
 import { useCreateSection } from '@/hooks/useSections'
@@ -278,7 +280,7 @@ export function ProjectHeader({ project, sections, subprojects }: ProjectHeaderP
             {subprojects.map((sub) => (
               <li key={sub.id}>
                 <Link
-                  to={`/project/${sub.id}`}
+                  href={`/project/${sub.id}`}
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-accent-600 py-1"
                 >
                   <span

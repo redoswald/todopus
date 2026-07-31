@@ -1,5 +1,7 @@
+'use client'
+
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { MainPanel } from '@/components/layout/MainPanel'
 import { useCreateProject, useProjects } from '@/hooks/useProjects'
@@ -14,7 +16,7 @@ export function NewProjectPage() {
 
   const { data: projects = [] } = useProjects()
   const createProject = useCreateProject()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -31,7 +33,7 @@ export function NewProjectPage() {
       })
 
       toast(`Project "${name.trim()}" created`)
-      navigate(`/project/${project.id}`)
+      router.push(`/project/${project.id}`)
     } catch (err) {
       console.error('Project create error:', err)
       setError(err instanceof Error ? err.message : 'Failed to create project')
@@ -130,7 +132,7 @@ export function NewProjectPage() {
             </button>
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => router.back()}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
             >
               Cancel

@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom'
+'use client'
+
+import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 
 const features = [
@@ -77,7 +79,7 @@ export function LandingPage() {
         {/* Nav */}
         <header className="px-4 py-5">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5">
               <span className="h-2.5 w-2.5 rounded-full bg-accent-500" aria-hidden="true" />
               <span className="text-lg font-bold tracking-tight text-gray-900">Intend</span>
             </Link>
@@ -89,7 +91,7 @@ export function LandingPage() {
                 Done Intentionally
               </a>
               {user ? (
-                <Link to="/inbox">
+                <Link href="/inbox">
                   <button className="px-4 py-2 text-sm font-medium rounded-xl bg-accent-500 text-white hover:bg-accent-600 transition-all">
                     Go to Inbox
                   </button>
@@ -97,12 +99,12 @@ export function LandingPage() {
               ) : (
                 <>
                   <Link
-                    to="/login"
+                    href="/login"
                     className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                   >
                     Sign in
                   </Link>
-                  <Link to="/signup">
+                  <Link href="/signup">
                     <button className="px-4 py-2 text-sm font-medium rounded-xl bg-accent-500 text-white hover:bg-accent-600 transition-all">
                       Get started
                     </button>
@@ -133,19 +135,19 @@ export function LandingPage() {
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                   {user ? (
-                    <Link to="/inbox">
+                    <Link href="/inbox">
                       <button className="w-full sm:w-auto px-8 py-3 text-base font-medium rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-accent-500 text-white hover:bg-accent-600">
                         Go to Inbox
                       </button>
                     </Link>
                   ) : (
                     <>
-                      <Link to="/signup">
+                      <Link href="/signup">
                         <button className="w-full sm:w-auto px-8 py-3 text-base font-medium rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-accent-500 text-white hover:bg-accent-600">
                           Get Started
                         </button>
                       </Link>
-                      <Link to="/login">
+                      <Link href="/login">
                         <button className="w-full sm:w-auto px-8 py-3 text-base font-medium rounded-xl border-2 border-gray-200 hover:border-accent-300 hover:bg-accent-50 hover:text-accent-500 transition-all bg-white text-gray-700">
                           Sign In
                         </button>
@@ -221,7 +223,7 @@ export function LandingPage() {
                   </div>
                 )
                 return 'href' in feature && feature.href ? (
-                  <Link key={feature.title} to={feature.href}>
+                  <Link key={feature.title} href={feature.href}>
                     {card}
                   </Link>
                 ) : (
@@ -248,7 +250,7 @@ export function LandingPage() {
             </p>
             <div className="mt-6">
               <Link
-                to="/connect"
+                href="/connect"
                 className="text-accent-500 hover:text-accent-600 font-medium"
               >
                 Connect your assistant →
@@ -327,13 +329,13 @@ export function LandingPage() {
             </p>
             <div className="mt-6">
               {user ? (
-                <Link to="/inbox">
+                <Link href="/inbox">
                   <button className="bg-white text-gray-900 hover:bg-gray-100 rounded-xl px-8 py-3 font-medium shadow-md transition-all">
                     Go to Inbox
                   </button>
                 </Link>
               ) : (
-                <Link to="/signup">
+                <Link href="/signup">
                   <button className="bg-white text-gray-900 hover:bg-gray-100 rounded-xl px-8 py-3 font-medium shadow-md transition-all">
                     Get Started for Free
                   </button>

@@ -1,5 +1,7 @@
+'use client'
+
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Check, Copy, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
@@ -53,7 +55,7 @@ export function ConnectPage() {
                   You're signed in and ready. ✓
                 </span>
               ) : (
-                <Link to="/signup" className="text-accent-600 font-medium hover:underline">
+                <Link href="/signup" className="text-accent-600 font-medium hover:underline">
                   Create your account first →
                 </Link>
               )}
@@ -112,7 +114,7 @@ export function ConnectPage() {
 
         {/* Footer */}
         <div className="mt-12 text-center">
-          <Link to={user ? '/inbox' : '/'} className="text-sm text-gray-500 hover:text-accent-600">
+          <Link href={user ? '/inbox' : '/'} className="text-sm text-gray-500 hover:text-accent-600">
             ← Back to Intend
           </Link>
         </div>

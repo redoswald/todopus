@@ -1,3 +1,5 @@
+'use client'
+
 import { Archive, ArchiveRestore } from 'lucide-react'
 import { toast } from 'sonner'
 import { MainPanel } from '@/components/layout/MainPanel'

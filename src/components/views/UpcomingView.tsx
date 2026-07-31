@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { Calendar } from 'lucide-react'

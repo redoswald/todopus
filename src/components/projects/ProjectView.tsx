@@ -1,5 +1,7 @@
+'use client'
+
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Sparkles } from 'lucide-react'
 import { MainPanel } from '@/components/layout/MainPanel'
@@ -23,7 +25,7 @@ export function ProjectView() {
   const { data: sections = [], isLoading: sectionsLoading } = useSections(projectId)
   const { data: unsectionedTasks = [], isLoading: tasksLoading } = useTasks({ projectId, noSection: true })
 
-  const navigate = useNavigate()
+  const router = useRouter()
   const { data: allProjects = [] } = useProjects()
   const { data: placements } = usePlacements()
   const updateProject = useUpdateProject()
@@ -213,7 +215,7 @@ export function ProjectView() {
               archiveProject.mutate(projectId!, {
                 onSuccess: () => {
                   toast(`"${name}" archived`)
-                  navigate('/inbox')
+                  router.push('/inbox')
                 },
               })
             }}
@@ -250,7 +252,7 @@ export function ProjectView() {
               onSuccess: () => {
                 setShowDeleteModal(false)
                 toast(`Project "${deletedName}" deleted`)
-                navigate('/inbox')
+                router.push('/inbox')
               },
             })
           }}

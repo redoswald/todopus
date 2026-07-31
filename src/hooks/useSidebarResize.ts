@@ -13,14 +13,17 @@ export function useSidebarResize({
   minWidth = 288,
   maxWidth = 360,
 }: UseSidebarResizeOptions = {}) {
-  const [width, setWidth] = useState(() => {
+  // Start at the default and load the stored width after mount — reading
+  // localStorage in the initializer would make server and client HTML
+  // disagree under Next.js prerendering (hydration mismatch)
+  const [width, setWidth] = useState(defaultWidth)
+  useEffect(() => {
     const stored = localStorage.getItem(storageKey)
     if (stored) {
       const parsed = Number(stored)
-      if (!isNaN(parsed)) return parsed
+      if (!isNaN(parsed)) setWidth(parsed)
     }
-    return defaultWidth
-  })
+  }, [storageKey])
 
   const [isDragging, setIsDragging] = useState(false)
   const lastExpandedWidth = useRef(width || defaultWidth)

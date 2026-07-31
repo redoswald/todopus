@@ -1,11 +1,13 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useRouter } from 'next/navigation'
 import { useAcceptShareLink } from '@/hooks/useSharing'
 import { MainPanel } from '@/components/layout/MainPanel'
 
 export function AcceptSharePage() {
   const { token } = useParams<{ token: string }>()
-  const navigate = useNavigate()
+  const router = useRouter()
   const acceptLink = useAcceptShareLink()
   const [error, setError] = useState<string | null>(null)
 
@@ -17,7 +19,7 @@ export function AcceptSharePage() {
 
     acceptLink.mutate({ token }, {
       onSuccess: (projectId) => {
-        navigate(`/project/${projectId}`, { replace: true })
+        router.replace(`/project/${projectId}`)
       },
       onError: (err) => {
         setError(err instanceof Error ? err.message : 'Failed to accept share link')
@@ -38,7 +40,7 @@ export function AcceptSharePage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-2">Invalid or expired link</h2>
           <p className="text-sm text-gray-500 mb-4">{error}</p>
           <button
-            onClick={() => navigate('/inbox')}
+            onClick={() => router.push('/inbox')}
             className="px-4 py-2 text-sm font-medium text-white bg-accent-500 rounded-md hover:bg-accent-600 transition-colors"
           >
             Go to Inbox

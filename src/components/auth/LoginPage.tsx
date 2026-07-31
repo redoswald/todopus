@@ -1,5 +1,8 @@
+'use client'
+
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
 export function LoginPage() {
@@ -8,7 +11,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const { signIn, signInWithGoogle } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,7 +24,7 @@ export function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/')
+      router.push('/inbox')
     }
   }
 
@@ -115,7 +118,7 @@ export function LoginPage() {
 
           <p className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-accent-600 hover:text-accent-500 font-medium">
+            <Link href="/signup" className="text-accent-600 hover:text-accent-500 font-medium">
               Sign up
             </Link>
           </p>

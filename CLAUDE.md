@@ -1,17 +1,18 @@
 # Intend
 
-Todoist-like task manager, MCP-first for AI (bring your own assistant via `../intend-mcp`; no embedded AI). Built with React 18, TypeScript (strict), Tailwind CSS, Supabase (Postgres + Auth + RLS), Vite, and TanStack React Query. Deployed on Vercel.
+Todoist-like task manager, MCP-first for AI (bring your own assistant via `../intend-mcp`; no embedded AI). Built with Next.js (App Router), React 19, TypeScript (strict), Tailwind CSS v3, Supabase (Postgres + Auth + RLS via `@supabase/ssr`), and TanStack React Query. Deployed on Vercel.
 
 ## Commands
 
-- `npm run dev` — local dev server
-- `npm run build` — production build
+- `npm run dev` — local dev server (Next.js)
+- `npm run build` — production build (includes type check)
 - `npm run lint` — lint check
 - `vercel --prod` — deploy directly from local without pushing
 
 ## Project Structure
 
-- `src/components/` — React components
+- `src/app/` — Next.js App Router routes (thin pages; views live in components/)
+- `src/components/` — React components (nearly all client components)
 - `src/hooks/` — custom hooks (TanStack Query wrappers)
 - `src/lib/` — utilities, Supabase client, helpers
 - `src/contexts/` — React context providers
@@ -22,14 +23,17 @@ Todoist-like task manager, MCP-first for AI (bring your own assistant via `../in
 
 - `@/` path alias maps to `src/`
 - Custom hooks wrap TanStack React Query for all data fetching
+- Auth: `src/lib/supabase/` holds the suite client factories; `cookie-options.ts` is a cross-app contract (keep byte-identical with tend/attend/portend-web). Route protection is middleware-based (`src/middleware.ts`)
 - RLS enabled on all public tables
 - Tailwind accent palette: orange
 - No test framework yet
 
 ## Environment Variables
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_AUTH_COOKIE_DOMAIN` — production ONLY (suite SSO cookie scoping; see `../docs/supabase.md`). Never set locally or on previews.
+- `NEXT_PUBLIC_SITE_URL` — production OAuth redirect base
 
 ## Shared Supabase Database
 
