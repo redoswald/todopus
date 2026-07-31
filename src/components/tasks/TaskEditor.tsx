@@ -189,7 +189,19 @@ export function TaskEditor({ task, defaultProjectId, defaultSectionId, defaultDu
   ]
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 space-y-4">
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      onKeyDown={(e) => {
+        // Escape leaves the editor from anywhere in the form; like
+        // click-outside, unsaved edits are saved rather than dropped
+        if (e.key !== 'Escape') return
+        e.stopPropagation()
+        saveOnCloseRef.current()
+        onClose()
+      }}
+      className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 space-y-4"
+    >
       {error && (
         <div className="bg-red-50 text-red-600 p-2 rounded text-sm">
           {error}
@@ -385,6 +397,8 @@ function SubtaskSection({ parentTask }: { parentTask: Task }) {
       handleAddSubtask()
     }
     if (e.key === 'Escape') {
+      // Only collapse the subtask input, not the whole editor
+      e.stopPropagation()
       setNewSubtaskTitle('')
       setShowInput(false)
     }

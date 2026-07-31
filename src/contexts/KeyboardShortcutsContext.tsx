@@ -6,18 +6,20 @@ import { ShortcutsHelpOverlay } from '@/components/shared/ShortcutsHelpOverlay'
 interface KeyboardShortcutsContextValue {
   selectedTaskId: string | null
   setSelectedTaskId: (id: string | null) => void
+  selectedNavPath: string | null
   helpOverlayOpen: boolean
 }
 
-// Default value lets TaskItem render outside the provider (e.g. shared
+// Default value lets consumers render outside the provider (e.g. shared
 // project views) with selection simply disabled.
 const KeyboardShortcutsContext = createContext<KeyboardShortcutsContextValue>({
   selectedTaskId: null,
   setSelectedTaskId: () => {},
+  selectedNavPath: null,
   helpOverlayOpen: false,
 })
 
-export function useTaskSelection() {
+export function useShortcuts() {
   return useContext(KeyboardShortcutsContext)
 }
 
@@ -40,8 +42,22 @@ function getVisibleTaskIds(): string[] {
     .map(el => el.dataset.taskId!)
 }
 
+// Sidebar rows stay in the DOM when the sidebar is collapsed (width 0,
+// overflow hidden) or off-canvas on mobile, so check the containing aside.
+function getVisibleNavItems(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('[data-nav-path]')).filter(el => {
+    if (el.offsetParent === null) return false
+    const aside = el.closest('aside')
+    if (!aside) return true
+    const rect = aside.getBoundingClientRect()
+    return rect.width > 0 && rect.right > 0
+  })
+}
+
 export function KeyboardShortcutsProvider({ children }: { children: ReactNode }) {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  // Non-null while the sidebar "column" has the keyboard selection
+  const [selectedNavPath, setSelectedNavPath] = useState<string | null>(null)
   const [helpOverlayOpen, setHelpOverlayOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,9 +65,10 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
   // Selection is per-view; drop it when the route changes
   useEffect(() => {
     setSelectedTaskId(null)
+    setSelectedNavPath(null)
   }, [location.pathname])
 
-  const moveSelection = useCallback((direction: 1 | -1): boolean => {
+  const moveTaskSelection = useCallback((direction: 1 | -1): boolean => {
     const ids = getVisibleTaskIds()
     if (ids.length === 0) return false
     setSelectedTaskId(current => {
@@ -60,6 +77,20 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
         return direction === 1 ? ids[0] : ids[ids.length - 1]
       }
       return ids[Math.min(ids.length - 1, Math.max(0, index + direction))]
+    })
+    return true
+  }, [])
+
+  const moveNavSelection = useCallback((direction: 1 | -1): boolean => {
+    const items = getVisibleNavItems()
+    if (items.length === 0) return false
+    setSelectedNavPath(current => {
+      const index = items.findIndex(el => el.dataset.navPath === current)
+      const next = index === -1
+        ? (direction === 1 ? items[0] : items[items.length - 1])
+        : items[Math.min(items.length - 1, Math.max(0, index + direction))]
+      next.scrollIntoView({ block: 'nearest' })
+      return next.dataset.navPath!
     })
     return true
   }, [])
@@ -80,14 +111,39 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
         return
       }
 
+      const inSidebar = selectedNavPath !== null
+
       switch (e.key) {
         case 'j':
         case 'ArrowDown':
-          if (moveSelection(1)) e.preventDefault()
+          if (inSidebar ? moveNavSelection(1) : moveTaskSelection(1)) e.preventDefault()
           break
         case 'k':
         case 'ArrowUp':
-          if (moveSelection(-1)) e.preventDefault()
+          if (inSidebar ? moveNavSelection(-1) : moveTaskSelection(-1)) e.preventDefault()
+          break
+        case 'ArrowLeft': {
+          if (inSidebar) break
+          const items = getVisibleNavItems()
+          if (items.length === 0) break
+          e.preventDefault()
+          setSelectedTaskId(null)
+          const current = items.find(el => el.dataset.navPath === location.pathname) ?? items[0]
+          setSelectedNavPath(current.dataset.navPath!)
+          current.scrollIntoView({ block: 'nearest' })
+          break
+        }
+        case 'ArrowRight':
+          if (!inSidebar) break
+          e.preventDefault()
+          setSelectedNavPath(null)
+          moveTaskSelection(1)
+          break
+        case 'Enter':
+          if (inSidebar) {
+            e.preventDefault()
+            navigate(selectedNavPath)
+          }
           break
         case 'q': {
           e.preventDefault()
@@ -96,16 +152,17 @@ export function KeyboardShortcutsProvider({ children }: { children: ReactNode })
           break
         }
         case 'Escape':
-          setSelectedTaskId(null)
+          if (inSidebar) setSelectedNavPath(null)
+          else setSelectedTaskId(null)
           break
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [helpOverlayOpen, location.pathname, moveSelection, navigate])
+  }, [helpOverlayOpen, selectedNavPath, location.pathname, moveTaskSelection, moveNavSelection, navigate])
 
   return (
-    <KeyboardShortcutsContext.Provider value={{ selectedTaskId, setSelectedTaskId, helpOverlayOpen }}>
+    <KeyboardShortcutsContext.Provider value={{ selectedTaskId, setSelectedTaskId, selectedNavPath, helpOverlayOpen }}>
       {children}
       <ShortcutsHelpOverlay isOpen={helpOverlayOpen} onClose={() => setHelpOverlayOpen(false)} />
     </KeyboardShortcutsContext.Provider>

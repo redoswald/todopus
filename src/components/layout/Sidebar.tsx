@@ -12,6 +12,7 @@ import {
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import { useShortcuts } from '@/contexts/KeyboardShortcutsContext'
 import { useProjects, usePlacements, useUpdateProject, useDeleteProject, useArchiveProject, useUnarchiveProject, useReorderProject, buildProjectTree, getDescendantIds, computeReorder } from '@/hooks/useProjects'
 import { useInboxCount, useTodayCount, useUpdateTask } from '@/hooks/useTasks'
 import { ProjectContextMenu } from '@/components/shared/ProjectContextMenu'
@@ -411,6 +412,8 @@ interface NavItemProps {
 
 function NavItem({ to, icon, label, count, onClick, onTaskDrop }: NavItemProps) {
   const [isDragOver, setIsDragOver] = useState(false)
+  const { selectedNavPath } = useShortcuts()
+  const isKeyboardSelected = selectedNavPath === to
 
   function handleDragOver(e: React.DragEvent) {
     if (!onTaskDrop) return
@@ -438,6 +441,7 @@ function NavItem({ to, icon, label, count, onClick, onTaskDrop }: NavItemProps) 
   return (
     <NavLink
       to={to}
+      data-nav-path={to}
       onClick={onClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -448,7 +452,8 @@ function NavItem({ to, icon, label, count, onClick, onTaskDrop }: NavItemProps) 
           isActive
             ? 'bg-accent-50 text-accent-600'
             : 'text-gray-700 hover:bg-gray-200',
-          isDragOver && 'ring-2 ring-accent-500 bg-accent-50'
+          isDragOver && 'ring-2 ring-accent-500 bg-accent-50',
+          isKeyboardSelected && 'bg-accent-50 ring-1 ring-inset ring-accent-300'
         )
       }
     >
@@ -484,6 +489,8 @@ function ProjectItem({ project, depth, onClick, onTaskDrop, onProjectDrop, onCon
   const [renameValue, setRenameValue] = useState(project.name)
   const hasChildren = project.children && project.children.length > 0
   const rowRef = useRef<HTMLDivElement>(null)
+  const { selectedNavPath } = useShortcuts()
+  const isKeyboardSelected = selectedNavPath === `/project/${project.id}`
 
   // Is this the item currently being dragged?
   const isSelf = draggedIdRef?.current === project.id
@@ -651,6 +658,7 @@ function ProjectItem({ project, depth, onClick, onTaskDrop, onProjectDrop, onCon
         ) : (
           <NavLink
             to={`/project/${project.id}`}
+            data-nav-path={`/project/${project.id}`}
             onClick={onClick}
             draggable
             onDragStart={handleDragStart}
@@ -670,7 +678,8 @@ function ProjectItem({ project, depth, onClick, onTaskDrop, onProjectDrop, onCon
                 !hasChildren && 'ml-5',
                 isTaskDragOver && 'ring-2 ring-accent-500 bg-accent-50',
                 indicator && indicator.zone === 'nest' && !isSelf && 'ring-2 ring-accent-500 bg-accent-50',
-                isSelf && 'opacity-40'
+                isSelf && 'opacity-40',
+                isKeyboardSelected && 'bg-accent-50 ring-1 ring-inset ring-accent-300'
               )
             }
           >
