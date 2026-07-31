@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar'
 import { CommandPalette, useCommandPalette } from './CommandPalette'
 import { useSidebarResize } from '@/hooks/useSidebarResize'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
+import { KeyboardShortcutsProvider } from '@/contexts/KeyboardShortcutsContext'
 
 export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -13,6 +14,7 @@ export function AppShell() {
   useRealtimeSync()
 
   return (
+    <KeyboardShortcutsProvider>
     <div className="h-screen flex bg-white overflow-hidden">
       <Sidebar
         isOpen={sidebarOpen}
@@ -53,5 +55,6 @@ export function AppShell() {
         onClose={commandPalette.close}
       />
     </div>
+    </KeyboardShortcutsProvider>
   )
 }

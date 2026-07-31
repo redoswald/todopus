@@ -7,12 +7,14 @@ import { TaskEditor } from '@/components/tasks/TaskEditor'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { TaskListSkeleton } from '@/components/shared/skeletons'
 import { useTasks } from '@/hooks/useTasks'
+import { useAddTaskParam } from '@/hooks/useAddTaskParam'
 import type { Task } from '@/types'
 
 export function UpcomingView() {
   const { data: tasks = [], isLoading } = useTasks({ upcoming: true })
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [showAddTask, setShowAddTask] = useState(false)
+  useAddTaskParam(() => setShowAddTask(true))
 
   const groupedTasks = useMemo(() => {
     const groups: Record<string, Task[]> = {}
